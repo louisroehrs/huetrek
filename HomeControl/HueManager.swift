@@ -27,7 +27,9 @@ class HueManager: ObservableObject {
         
         struct State: Codable {
             var on: Bool
-            var bri: Int?
+            var bri: Int
+            var hue: Int
+            var sat: Int
             var reachable: Bool
         }
     }
@@ -153,6 +155,8 @@ class HueManager: ObservableObject {
                     self?.lights = lightsDict.map { Light(id: $0.key,
                                                         name: $0.value.name,
                                                         state: $0.value.state) }
+
+                    self?.lights.sort { $0.name < $1.name }
                 } else if let error = error {
                     self?.error = error.localizedDescription
                 }
@@ -183,9 +187,10 @@ class HueManager: ObservableObject {
                        let lights = json["lights"] as? [String: Any] {
                         self?.lights = lights.map { (key, value) in
                             let name = (value as? [String: Any])?["name"] as? String ?? ""
-                            let state = (value as? [String: Any])?["state"] as? HueManager.Light.State ?? HueManager.Light.State(on: false, bri: nil, reachable: false)
+                            let state = (value as? [String: Any])?["state"] as? HueManager.Light.State ?? HueManager.Light.State(on: false, bri: 0, hue: 0, sat:0, reachable: false)
                             return Light(id: key, name: name, state: state)
                         }
+                        self?.lights.sort { $0.name < $1.name }
                     }
                 } catch {
                     self?.error = error.localizedDescription

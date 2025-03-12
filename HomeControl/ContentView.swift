@@ -1,5 +1,15 @@
 import SwiftUI
 
+
+extension Color {
+    init(hex: UInt) {
+        let red = Double((hex & 0xFF0000) >> 16) / 255.0
+        let green = Double((hex & 0x00FF00) >> 8) / 255.0
+        let blue = Double(hex & 0x0000FF) / 255.0
+        self.init(red: red, green: green, blue: blue)
+    }
+}
+
 struct TopLeftRoundedRectangle: Shape {
     var radius: CGFloat = 30  // Adjust corner radius
 
@@ -93,16 +103,16 @@ struct ContentView: View {
         VStack {
             HStack {// Header
                 TopLeftRoundedRectangle(radius: 40)
-                    .fill(Color.blue)
+                    .fill(Color(hex:0xCCE0F7))
                     .frame(width: 200, height: 40)
                 
                 Text("LIGHTS")
                     .font(Font.custom("Okuda Bold", size: 57))
                     .padding(0)
                     .frame( maxWidth: UIScreen.main.bounds.width)
-                    .foregroundColor(.blue)
+                    .foregroundColor(Color(hex:0xCCE0F7))
                     
-                Rectangle(radius: 40).fill(Color.blue).frame(width:60, height:40).padding(0)
+                Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:60, height:40).padding(0)
             }
             .frame(maxHeight:40)
             // Lights List
@@ -110,18 +120,19 @@ struct ContentView: View {
 
             // Footer
             HStack {
-                BottomLeftRoundedRectangle(radius: 40)
-                    .fill(Color.blue)
-                    .frame(maxWidth: UIScreen.main.bounds.width/2, maxHeight: 40)
+                BottomLeftRoundedRectangle(radius: 36)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(maxWidth: UIScreen.main.bounds.width/2, maxHeight: 36)
                 Text("LIGHTS")
-                    .font(Font.custom("Okuda", size: 50))
-                    .foregroundColor(.white)
+                    .font(Font.custom("Okuda", size: 52))
+                    .foregroundColor(.blue)
                     .frame(height: 40).padding(0)
-                Rectangle(radius: 40).fill(Color.blue).frame(width:10, height:40)
+                Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:10, height:36)
                 Text("SENSORS")
-                    .font(Font.custom("Okuda", size: 50))
-                    .foregroundColor(.white)
-                    .frame(height:40)
+                    .font(Font.custom("Okuda", size: 52))
+                    .foregroundColor(.blue)
+                    .frame(height:36)
+                Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:10, height:36)
             }
         }
         .padding()
@@ -170,7 +181,7 @@ struct ContentView: View {
     private var lightListView: some View {
         VStack {
             // Color Picker
-            ColorPicker("Select Color", selection: .constant(Color.blue))
+           /* ColorPicker("Select Color", selection: .constant(Color.blue))
                 .padding()
                 .frame(maxWidth: .infinity)
                 .background(Color.white.opacity(0.8))
@@ -183,12 +194,17 @@ struct ContentView: View {
                     .accentColor(.yellow)
             }
             .padding()
-
+*/
             List {
                 ForEach(hueManager.lights) { light in
                     LightRowView(light: light)
+                        .listRowBackground(Color.black)
+                        .background(Color.gray)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+            .listStyle(.plain)
+            .padding(.leading, 14)
             .scrollContentBackground(.hidden)
             .refreshable {
                 hueManager.fetchLights()
@@ -202,7 +218,7 @@ struct ContentView: View {
 //                }
 //            }
         }
-        .background(Color.blue)
+        .background(Color(hex: 0xCCE0F7))
     }
         
 
@@ -215,28 +231,36 @@ struct LightRowView: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
-                Image(systemName: light.state.on ? "lightbulb.fill" : "lightbulb")
-                    .foregroundColor(light.state.on ? .yellow : .gray)
+                Image(systemName: light.state.on ? "lightbulb.fill" : "lightbulb.fill")
+                    .foregroundColor(light.state.on ? .yellow : .yellow)
                 Text(light.name)
-                    .font(.headline)
+                    .font(Font.custom("Okuda", size: 20))
                 Spacer()
+                Rectangle()
+                    .fill(Color(hue: Double(light.state.hue) / 65536.0, saturation: Double(light.state.sat) / 255.0, brightness: Double(light.state.bri) / 254.0))
+                        .frame(width:40, height:40)
+                        .padding(0)
                 Toggle("", isOn: .init(
                     get: { light.state.on },
                     set: { _ in hueManager.toggleLight(light) }
                 ))
             }
-            
-            if light.state.on, let brightness = light.state.bri {
+            @State var brightness: Double = Double(light.state.bri) // Initialize with the current brightness
+
+            if light.state.on {
                 Slider(
-                    value: .init(
-                        get: { Double(brightness) },
-                        set: { hueManager.setBrightness(Int($0), for: light) }
-                    ),
-                    in: 0...254
-                )
+                    value: $brightness,
+                    in: 0...254, 
+                    onEditingChanged:{ _ in hueManager.setBrightness(Int(brightness), for: light) }
+                    )
+                    
             }
         }
         .opacity(light.state.reachable ? 1 : 0.5)
+        .background(Color.blue)
+        .foregroundColor(Color.black)
+        .cornerRadius(20)
+
     }
         
 }
