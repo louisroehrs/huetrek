@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C5FBC0C42D81058B0010C2A3 /* HomeControlUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5FBC0C22D81058B0010C2A3 /* HomeControlUITestsLaunchTests.swift */; };
+		C5FBC0CF2D817F360010C2A3 /* Okuda Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = C5FBC0CE2D817F360010C2A3 /* Okuda Italic.otf */; };
+		C5FBC0D02D817F360010C2A3 /* Okuda.otf in Resources */ = {isa = PBXBuildFile; fileRef = C5FBC0CB2D817F360010C2A3 /* Okuda.otf */; };
+		C5FBC0D12D817F360010C2A3 /* Okuda Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = C5FBC0CC2D817F360010C2A3 /* Okuda Bold.otf */; };
+		C5FBC0D22D817F360010C2A3 /* Okuda Bold Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = C5FBC0CD2D817F360010C2A3 /* Okuda Bold Italic.otf */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		C5123ABB2D7FD1D3003935D7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +35,11 @@
 		C5123AA62D7FD1D1003935D7 /* HomeControl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HomeControl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5123ABA2D7FD1D3003935D7 /* HomeControlTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HomeControlTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5123AC42D7FD1D3003935D7 /* HomeControlUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HomeControlUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C5FBC0C22D81058B0010C2A3 /* HomeControlUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeControlUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		C5FBC0CB2D817F360010C2A3 /* Okuda.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Okuda.otf; sourceTree = "<group>"; };
+		C5FBC0CC2D817F360010C2A3 /* Okuda Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Okuda Bold.otf"; sourceTree = "<group>"; };
+		C5FBC0CD2D817F360010C2A3 /* Okuda Bold Italic.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Okuda Bold Italic.otf"; sourceTree = "<group>"; };
+		C5FBC0CE2D817F360010C2A3 /* Okuda Italic.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Okuda Italic.otf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -92,6 +105,10 @@
 				C5123ABD2D7FD1D3003935D7 /* HomeControlTests */,
 				C5123AC72D7FD1D3003935D7 /* HomeControlUITests */,
 				C5123AA72D7FD1D1003935D7 /* Products */,
+				C5FBC0CB2D817F360010C2A3 /* Okuda.otf */,
+				C5FBC0CC2D817F360010C2A3 /* Okuda Bold.otf */,
+				C5FBC0CD2D817F360010C2A3 /* Okuda Bold Italic.otf */,
+				C5FBC0CE2D817F360010C2A3 /* Okuda Italic.otf */,
 			);
 			sourceTree = "<group>";
 		};
@@ -101,6 +118,7 @@
 				C5123AA62D7FD1D1003935D7 /* HomeControl.app */,
 				C5123ABA2D7FD1D3003935D7 /* HomeControlTests.xctest */,
 				C5123AC42D7FD1D3003935D7 /* HomeControlUITests.xctest */,
+				C5FBC0C22D81058B0010C2A3 /* HomeControlUITestsLaunchTests.swift */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -225,6 +243,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C5FBC0CF2D817F360010C2A3 /* Okuda Italic.otf in Resources */,
+				C5FBC0D02D817F360010C2A3 /* Okuda.otf in Resources */,
+				C5FBC0D12D817F360010C2A3 /* Okuda Bold.otf in Resources */,
+				C5FBC0D22D817F360010C2A3 /* Okuda Bold Italic.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -263,6 +285,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C5FBC0C42D81058B0010C2A3 /* HomeControlUITestsLaunchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

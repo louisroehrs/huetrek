@@ -196,8 +196,10 @@ class HueManager: ObservableObject {
     }
     
     func toggleLight(_ light: Light) {
-        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
-        
+//        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
+  
+        let bridgeIP = "localhost:8000"
+        let apiKey = "apiKey"
         let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights/\(light.id)/state")!
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
