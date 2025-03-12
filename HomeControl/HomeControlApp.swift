@@ -10,7 +10,7 @@ import SwiftData
 
 @main
 struct HomeControlApp: App {
-    var sharedModelContainer: ModelContainer = {
+/*    var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
         ])
@@ -28,5 +28,16 @@ struct HomeControlApp: App {
             ContentView()
         }
         .modelContainer(sharedModelContainer)
+    }
+
+*/
+
+    @StateObject private var hueManager = HueManager()
+    
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environmentObject(hueManager)
+        }
     }
 }

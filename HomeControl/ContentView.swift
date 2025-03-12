@@ -1,61 +1,124 @@
-//
-//  ContentView.swift
-//  HomeControl
-//
-//  Created by Louis Roehrs on 3/10/25.
-//
-
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
+    @EnvironmentObject private var hueManager: HueManager
+    @State private var showingPairingAlert = false
+    
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
+        NavigationView {
+            Group {
+                if hueManager.bridgeIP == nil {
+                    lightListView
+//                    discoveryView
+                } else if hueManager.apiKey == nil {
+                    pairingView
+                } else {
+                    lightListView
                 }
             }
-        } detail: {
-            Text("Select an item")
+            .navigationTitle("Hue Control")
+            .alert("Error", isPresented: .constant(hueManager.error != nil)) {
+                Button("OK") {
+                    hueManager.error = nil
+                }
+            } message: {
+                Text(hueManager.error ?? "")
+            }
         }
     }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+    
+    private var discoveryView: some View {
+        VStack(spacing: 20) {
+            if hueManager.isDiscovering {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+                Text("Searching for Hue Bridge...")
+            } else {
+                Text("No Hue Bridge found")
+                    .font(.headline)
+                Button("Search for Bridge") {
+                    hueManager.discoverBridge()
+                }
+                .buttonStyle(.borderedProminent)
             }
         }
+        .padding()
+    }
+    
+    private var pairingView: some View {
+        VStack(spacing: 20) {
+            Text("Press the link button on your Hue Bridge")
+                .font(.headline)
+                .multilineTextAlignment(.center)
+            
+            Image(systemName: "button.programmable")
+                .font(.system(size: 50))
+            
+            Button("Start Pairing") {
+                hueManager.pairWithBridge()
+            }
+            .buttonStyle(.borderedProminent)
+            
+            Button("Start Over", role: .destructive) {
+                hueManager.bridgeIP = nil
+            }
+        }
+        .padding()
+    }
+    
+    private var lightListView: some View {
+        List {
+            ForEach(hueManager.lights) { light in
+                LightRowView(light: light)
+            }
+        }
+        .refreshable {
+            hueManager.fetchLights()
+        }
+        .toolbar {
+            Button("Reset", role: .destructive) {
+                UserDefaults.standard.removeObject(forKey: "bridgeIP")
+                UserDefaults.standard.removeObject(forKey: "apiKey")
+                hueManager.bridgeIP = nil
+                hueManager.apiKey = nil
+            }
+        }
+    }
+}
+
+struct LightRowView: View {
+    @EnvironmentObject private var hueManager: HueManager
+    let light: HueManager.Light
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Image(systemName: light.state.on ? "lightbulb.fill" : "lightbulb")
+                    .foregroundColor(light.state.on ? .yellow : .gray)
+                Text(light.name)
+                    .font(.headline)
+                Spacer()
+                Toggle("", isOn: .init(
+                    get: { light.state.on },
+                    set: { _ in hueManager.toggleLight(light) }
+                ))
+            }
+            
+            if light.state.on, let brightness = light.state.bri {
+                Slider(
+                    value: .init(
+                        get: { Double(brightness) },
+                        set: { hueManager.setBrightness(Int($0), for: light) }
+                    ),
+                    in: 0...254
+                )
+            }
+        }
+        .opacity(light.state.reachable ? 1 : 0.5)
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
-}
+        .environmentObject(HueManager())
+} 
