@@ -138,7 +138,7 @@ struct ContentView: View {
             }
             .frame(maxHeight:40)
             // Lights List
-            lightListView.background(Color.red)
+            lightListView.background(Color.red).listRowSpacing(-10)
 
             // Footer
             HStack {
@@ -264,7 +264,7 @@ struct LightRowView: View {
                 Spacer()
 
 
-                Image(systemName: "circle.fill")
+                Image(systemName: "paintpalette.fill")
                     .imageScale(.large)
                     .foregroundColor(Color(hue: Double(light.state.hue) / 65536.0, saturation: Double(light.state.sat) / 255.0, brightness: Double(light.state.bri) / 254.0))
                     .frame(width:40, height:40)
