@@ -186,8 +186,14 @@ class HueManager: ObservableObject {
                     if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any],
                        let lights = json["lights"] as? [String: Any] {
                         self?.lights = lights.map { (key, value) in
+                            // probably a more straightforward way to assign Light.State but this works
                             let name = (value as? [String: Any])?["name"] as? String ?? ""
-                            let state = (value as? [String: Any])?["state"] as? HueManager.Light.State ?? HueManager.Light.State(on: false, bri: 0, hue: 0, sat:0, reachable: false)
+                            let hue = ((value as? [String: Any])?["state"] as? [String: Any])?["hue"] as? Int ?? 0
+                            let on = ((value as? [String: Any])?["state"] as? [String: Any])?["on"] as? Bool ?? false
+                            let bri = ((value as? [String: Any])?["state"] as? [String: Any])?["bri"] as? Int ?? 0
+                            let sat = ((value as? [String: Any])?["state"] as? [String: Any])?["sat"] as? Int ?? 0
+                            let state =  HueManager.Light.State(on: on, bri:bri, hue:hue, sat:sat, reachable: true)
+                            // fix reachable...
                             return Light(id: key, name: name, state: state)
                         }
                         self?.lights.sort { $0.name < $1.name }

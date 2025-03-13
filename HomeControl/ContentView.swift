@@ -31,6 +31,28 @@ struct TopLeftRoundedRectangle: Shape {
     }
 }
 
+struct RightRoundedRectangle: Shape {
+    var radius: CGFloat = 20  // Adjust corner radius
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.move(to: CGPoint(x: rect.minX+radius, y: rect.minY))
+        path.addArc(center: CGPoint(x: rect.minX + radius, y: rect.minY + radius),
+                    radius: radius,
+                    startAngle: .degrees(270),
+                    endAngle: .degrees(90),
+                    clockwise: false)
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.closeSubpath()
+
+        return path
+    }
+}
+
+
 struct Rectangle: Shape {
     var radius: CGFloat = 30  // Adjust corner radius
 
@@ -230,39 +252,58 @@ struct LightRowView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            HStack {
-                Image(systemName: light.state.on ? "lightbulb.fill" : "lightbulb.fill")
-                    .foregroundColor(light.state.on ? .yellow : .yellow)
-                Text(light.name)
-                    .font(Font.custom("Okuda", size: 20))
-                Spacer()
-                Rectangle()
-                    .fill(Color(hue: Double(light.state.hue) / 65536.0, saturation: Double(light.state.sat) / 255.0, brightness: Double(light.state.bri) / 254.0))
-                        .frame(width:40, height:40)
-                        .padding(0)
-                Toggle("", isOn: .init(
-                    get: { light.state.on },
-                    set: { _ in hueManager.toggleLight(light) }
-                ))
-            }
-            @State var brightness: Double = Double(light.state.bri) // Initialize with the current brightness
+            HStack(spacing:0) {
 
-            if light.state.on {
-                Slider(
-                    value: $brightness,
-                    in: 0...254, 
-                    onEditingChanged:{ _ in hueManager.setBrightness(Int(brightness), for: light) }
-                    )
-                    
+                Text(light.name)
+                    .textCase(.uppercase)
+                    .offset(x:10,y:5)
+                    .font(Font.custom("Okuda", size: 30))
+                    .frame(width: 200, height:40, alignment: .leading)
+                    .background(Color.blue)
+
+                Spacer()
+
+
+                Image(systemName: "circle.fill")
+                    .imageScale(.large)
+                    .foregroundColor(Color(hue: Double(light.state.hue) / 65536.0, saturation: Double(light.state.sat) / 255.0, brightness: Double(light.state.bri) / 254.0))
+                    .frame(width:40, height:40)
+                    .background(Color.black)
+                
+                Image(systemName: light.state.on ? "sun.max.fill" : "sun.min")
+                    .imageScale(.large)
+                    .foregroundColor(light.state.on ? .yellow : .black)
+                    .frame(width:40, height:40)
+                    .background(Color.black)
+
+                RightRoundedRectangle()
+                    .fill(Color(.blue))
+                    .frame(width:40,height:40)
+                
+//                Toggle("", isOn: .init(
+//                    get: { light.state.on },
+//                    set: { _ in hueManager.toggleLight(light) }
+//                ))
             }
+
+
+
+//            if light.state.on {
+//                @State var brightness: Double = Double(light.state.bri) // Initialize with the current brightness
+//                Slider(
+//                    value: $brightness,
+//                    in: 0...254,
+//
+//                    onEditingChanged:{ _ in hueManager.setBrightness(Int(brightness), for: light) }
+//                    )
+//            }
         }
         .opacity(light.state.reachable ? 1 : 0.5)
-        .background(Color.blue)
+        .background(Color.black)
         .foregroundColor(Color.black)
-        .cornerRadius(20)
-
+        .background(Color.black)
     }
-        
+
 }
 
 #Preview {
