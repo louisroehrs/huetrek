@@ -285,7 +285,6 @@ class HueManager: ObservableObject {
                     print(" do do do")
                     if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any],
                        let lights = json as? [String: Any] {
-                        print("lights: \(lights)")
                         self?.lights = lights.map { (key, value) in
                             // probably a more straightforward way to assign Light.State but this works
                             let name = (value as? [String: Any])?["name"] as? String ?? ""
