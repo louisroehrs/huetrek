@@ -1,5 +1,8 @@
 import Foundation
 import Network
+import SwiftUI
+import AVFoundation // Import AVFoundation for audio playback
+
 
 class HueManager: ObservableObject {
     @Published var bridgeIP: String? {
@@ -20,10 +23,18 @@ class HueManager: ObservableObject {
     @Published var isDiscovering = false
     @Published var error: String?
     
+    private var audioPlayer: AVAudioPlayer?
+    
     struct Light: Identifiable, Codable {
         let id: String
         var name: String
         var state: State
+        var isColorPickerVisible: Bool = false
+        var selectedColor: Color?
+
+        private enum CodingKeys: String, CodingKey {
+              case id, name, state
+        }
         
         struct State: Codable {
             var on: Bool
@@ -32,6 +43,7 @@ class HueManager: ObservableObject {
             var sat: Int
             var reachable: Bool
         }
+    
     }
     
     init() {
@@ -164,9 +176,21 @@ class HueManager: ObservableObject {
         }.resume()
     }
 
+    func hueLightToSwiftColor(light: Light) -> Color {
+        return Color(
+            hue: Double(light.state.hue) / 65536.0,
+            saturation: Double(light.state.sat) / 255.0,
+            brightness: Double(light.state.bri) / 254.0)
+    }
+    
+    func updateColor(light: Light, color: Color) {
+        print("Light \(light.name) changed to color: \(color)")
+    }
+              
     func fetchLightsMock() {
         print("mock")
-        let url = URL(string: "http://localhost:8000/fullconfig.json")!
+        let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/fullconfig.json")!
+        // http://localhost:8000/fullconfig.json")!
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 print("dispatch")
@@ -194,7 +218,11 @@ class HueManager: ObservableObject {
                             let sat = ((value as? [String: Any])?["state"] as? [String: Any])?["sat"] as? Int ?? 0
                             let state =  HueManager.Light.State(on: on, bri:bri, hue:hue, sat:sat, reachable: true)
                             // fix reachable...
-                            return Light(id: key, name: name, state: state)
+
+                            var thisLight = Light(id: key, name: name, state: state)
+                            thisLight.selectedColor = self?.hueLightToSwiftColor(light: thisLight)
+                            
+                            return thisLight
                         }
                         self?.lights.sort { $0.name < $1.name }
                     }
@@ -205,10 +233,36 @@ class HueManager: ObservableObject {
             }
         }.resume()
     }
+ 
+    func playSound(sound: String) {
+        guard let url = Bundle.main.url(forResource: sound, withExtension: "mp3") else {
+            print("Sound file not found")
+            return
+        }
+
+        do {
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.play() // Play the sound
+        } catch {
+            print("Error playing sound: \(error.localizedDescription)")
+        }
+    }
     
+    func toggleColorPicker(_ light: Light) {
+        playSound(sound: "colorpickerslideup")
+        if let index = lights.firstIndex(where: { $0.id == light.id }) {
+            lights[index].isColorPickerVisible.toggle()
+        }
+    }
     func toggleLight(_ light: Light) {
 //        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
-  
+        print("Toggle light \(light.name)")  // Play sound
+        if light.state.on {
+            playSound(sound: "lightOff")
+        } else {
+            playSound(sound: "lightOn")
+        }
+
         let bridgeIP = "localhost:8000"
         let apiKey = "apiKey"
         let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights/\(light.id)/state")!

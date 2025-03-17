@@ -1,6 +1,7 @@
 import SwiftUI
 
 
+
 extension Color {
     init(hex: UInt) {
         let red = Double((hex & 0xFF0000) >> 16) / 255.0
@@ -106,7 +107,15 @@ struct ContentView: View {
                     lightsView
                 }
             }
-//            .navigationTitle("Hue Control")
+            .navigationBarTitleDisplayMode(.inline)
+            .foregroundStyle(Color.white)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("\(UIScreen.main.bounds.width)")
+                        .font(.largeTitle) // Set the font size
+                        .foregroundColor(.white) // Set the text color to white
+                    }
+                }
             .alert("Error", isPresented: .constant(hueManager.error != nil)) {
                  Button("OK") {
                     hueManager.error = nil
@@ -115,10 +124,10 @@ struct ContentView: View {
                  Text(hueManager.error ?? "")
                     
             }
+            .foregroundStyle(Color.white)
+
         }
     }
-    
-    
     
     private var lightsView: some View {
     
@@ -201,6 +210,7 @@ struct ContentView: View {
     }
     
     private var lightListView: some View {
+
         VStack {
             // Color Picker
            /* ColorPicker("Select Color", selection: .constant(Color.blue))
@@ -219,14 +229,15 @@ struct ContentView: View {
 */
             List {
                 ForEach(hueManager.lights) { light in
+                    
                     LightRowView(light: light)
                         .listRowBackground(Color.black)
-                        .background(Color.gray)
+                        .background(Color.black)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             .listStyle(.plain)
-            .padding(.leading, 14)
+            .padding(.leading, 12)
             .scrollContentBackground(.hidden)
             .refreshable {
                 hueManager.fetchLights()
@@ -248,60 +259,80 @@ struct ContentView: View {
 
 struct LightRowView: View {
     @EnvironmentObject private var hueManager: HueManager
-    let light: HueManager.Light
+    var light: HueManager.Light
+    
     
     var body: some View {
-        VStack(alignment: .leading) {
-            HStack(spacing:0) {
-
+        VStack {
+            HStack(spacing: 1) {
+                
                 Text(light.name)
                     .textCase(.uppercase)
                     .offset(x:10,y:5)
                     .font(Font.custom("Okuda", size: 30))
-                    .frame(width: 200, height:40, alignment: .leading)
+                    .frame(width: UIScreen.main.bounds.width - 180, height:40, alignment: .leading)
                     .background(Color.blue)
-
-                Spacer()
-
-
-                Image(systemName: "paintpalette.fill")
-                    .imageScale(.large)
-                    .foregroundColor(Color(hue: Double(light.state.hue) / 65536.0, saturation: Double(light.state.sat) / 255.0, brightness: Double(light.state.bri) / 254.0))
-                    .frame(width:40, height:40)
-                    .background(Color.black)
+                    .onTapGesture {
+                        hueManager.toggleLight(light)
+                    }
                 
                 Image(systemName: light.state.on ? "sun.max.fill" : "sun.min")
                     .imageScale(.large)
                     .foregroundColor(light.state.on ? .yellow : .black)
                     .frame(width:40, height:40)
                     .background(Color.black)
-
+                    .onTapGesture {
+                        hueManager.toggleLight(light)
+                    }
+                
+                
+                Image(systemName: "paintpalette.fill")
+                    .imageScale(.large)
+                    .foregroundColor(Color(hue: Double(light.state.hue) / 65536.0, saturation: Double(light.state.sat) / 255.0, brightness: Double(light.state.bri) / 254.0))
+                    .frame(width:40, height:40)
+                    .background(Color.black)
+                    .clipped()
+                    .overlay
+                        {
+                            ColorPicker(
+                                "",
+                                selection: Binding(
+                                    get: {light.selectedColor! ?? Color.white},
+                                    set: {
+                                        hueManager.updateColor(light: light, color: $0)
+                                    }),
+                                supportsOpacity: false)
+                            .labelsHidden()
+                            .scaleEffect(x:20, y:20)
+                            .opacity(0.10)
+                            .frame(width:40, height: 40)
+                            .clipped()
+                        }
+                
                 RightRoundedRectangle()
                     .fill(Color(.blue))
                     .frame(width:40,height:40)
                 
-//                Toggle("", isOn: .init(
-//                    get: { light.state.on },
-//                    set: { _ in hueManager.toggleLight(light) }
-//                ))
             }
-
-
-
-//            if light.state.on {
-//                @State var brightness: Double = Double(light.state.bri) // Initialize with the current brightness
-//                Slider(
-//                    value: $brightness,
-//                    in: 0...254,
-//
-//                    onEditingChanged:{ _ in hueManager.setBrightness(Int(brightness), for: light) }
-//                    )
-//            }
+            if light.isColorPickerVisible {
+                ColorPicker("SELECT COLOR", selection: .constant(Color(hue: Double(light.state.hue) / 65536.0, saturation: Double(light.state.sat) / 255.0, brightness: Double(light.state.bri) / 254.0)))
+                    .font(Font.custom("Okuda", size: 30))
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.white.opacity(0.8))
+                    .cornerRadius(20)
+                RightRoundedRectangle()
+                    .fill(Color(.blue))
+                    .frame(width:.infinity, height:40)
+                
+            }
         }
+        .padding(.bottom, 0)
+        .padding(.top,0)
+        .padding(.leading, 8)
         .opacity(light.state.reachable ? 1 : 0.5)
         .background(Color.black)
         .foregroundColor(Color.black)
-        .background(Color.black)
     }
 
 }
