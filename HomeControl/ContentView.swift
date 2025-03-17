@@ -132,8 +132,8 @@ struct ContentView: View {
         NavigationView {
             Group {
                 if hueManager.bridgeIP == nil {
-                    pairingView
-                    // discoveryView
+                    // pairingView
+                    discoveryView
                 } else if hueManager.apiKey == nil {
                     pairingView
                 } else {
@@ -147,7 +147,7 @@ struct ContentView: View {
                     HStack {
                         BottomLeftRoundedRectangle(radius:30).fill(Color.mint).frame(width:50,height:30)
                         
-                        if hueManager.bridgeIP != nil {
+                        if hueManager.bridgeIP == nil {
                             Text("SCANNING")
                                 .layoutPriority(5)
                                 .font(Font.custom("Okuda Bold", size: 40))
@@ -260,6 +260,7 @@ struct ContentView: View {
                             .border(Color.blue)
                             .cornerRadius(20)
                             .padding(0)
+                        
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle())
 
@@ -274,17 +275,24 @@ struct ContentView: View {
                                 .cornerRadius(20)
                                 .padding(0)
                         }
-                        
-                        Button(action:hueManager.discoverBridge) {
-                            Text("SEARCH FOR BRIDGE")
-                                .font(Font.custom("Okuda Bold", size: 30))
-                                .foregroundColor(.white)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                        }
-                        .background(Color.blue) // Blue background
-                        .cornerRadius(10) // Rounded corners
-                        .padding() // External padding for spacing
+                        HStack(spacing:-5) {
+                            Button(action:hueManager.discoverBridge) {
+                                Text("SEARCH FOR BRIDGE")
+                                    .font(Font.custom("Okuda Bold", size: 30))
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, maxHeight:60)
+                            }
+                            .background(Color.blue)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            
+                            RightRoundedRectangle(radius:30)
+                                .fill(Color.blue)
+                                .frame(width:30,height:60)
+                                .padding(0)
+                        }.padding(0)
+
                     }
                        
                     Color.clear
