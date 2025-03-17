@@ -21,6 +21,7 @@ class HueManager: ObservableObject {
     }
     @Published var lights: [Light] = []
     @Published var isDiscovering = false
+    @Published var noDiscoveryAttempts = true
     @Published var error: String?
     
     private var audioPlayer: AVAudioPlayer?
@@ -59,6 +60,7 @@ class HueManager: ObservableObject {
     
     func discoverBridge() {
         isDiscovering = true
+        noDiscoveryAttempts = false
         error = nil
         
         // First try meethue.com discovery
