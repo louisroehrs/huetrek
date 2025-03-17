@@ -70,6 +70,13 @@ struct Rectangle: Shape {
     }
 }
 
+
+enum Hub: String, CaseIterable, Identifiable {
+    case midrock, mardell
+    var id: Self { self }
+}
+
+
 struct BottomLeftRoundedRectangle: Shape {
     var radius: CGFloat = 30  // Adjust corner radius
 
@@ -94,7 +101,8 @@ struct BottomLeftRoundedRectangle: Shape {
 struct ContentView: View {
     @EnvironmentObject private var hueManager: HueManager
     @State private var showingPairingAlert = false
-    
+    @State private var selectedHub: Hub = .mardell
+
     var body: some View {
         NavigationView {
             Group {
@@ -111,10 +119,19 @@ struct ContentView: View {
             .foregroundStyle(Color.white)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text("\(UIScreen.main.bounds.width)")
-                        .font(.largeTitle) // Set the font size
-                        .foregroundColor(.white) // Set the text color to white
+                    HStack {
+                        BottomLeftRoundedRectangle(radius:30).fill(Color.mint).frame(width:50,height:30)
+                        
+                        Text("MARDELL")
+                            .font(Font.custom("Okuda Bold", size: 40))
+                            .foregroundStyle(Color.blue)
+                            .layoutPriority(1).padding(.bottom, 1)
+                            .foregroundColor(.white).tag(Hub.mardell)
+                            
+                        Rectangle().fill(Color.mint).frame(maxHeight:30)
+                       
                     }
+                }
                 }
             .alert("Error", isPresented: .constant(hueManager.error != nil)) {
                  Button("OK") {
@@ -135,13 +152,14 @@ struct ContentView: View {
             HStack {// Header
                 TopLeftRoundedRectangle(radius: 40)
                     .fill(Color(hex:0xCCE0F7))
-                    .frame(width: 200, height: 40)
+                    .frame(maxHeight: 40)
+                    .layoutPriority(1)
                 
                 Text("LIGHTS")
-                    .font(Font.custom("Okuda Bold", size: 57))
-                    .padding(0)
-                    .frame( maxWidth: UIScreen.main.bounds.width)
+                    .font(Font.custom("Okuda Bold", size: 55))
+                    .padding(.bottom,2)
                     .foregroundColor(Color(hex:0xCCE0F7))
+                    .layoutPriority(1)
                     
                 Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:60, height:40).padding(0)
             }
@@ -155,14 +173,15 @@ struct ContentView: View {
                     .fill(Color(hex:0xCCE0F7))
                     .frame(maxWidth: UIScreen.main.bounds.width/2, maxHeight: 36)
                 Text("LIGHTS")
-                    .font(Font.custom("Okuda", size: 52))
+                    .font(Font.custom("Okuda", size: 50))
                     .foregroundColor(.blue)
-                    .frame(height: 40).padding(0)
+                    .frame(height: 40).padding(.bottom, 2)
                 Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:10, height:36)
                 Text("SENSORS")
-                    .font(Font.custom("Okuda", size: 52))
+                    .font(Font.custom("Okuda", size: 50))
                     .foregroundColor(.blue)
                     .frame(height:36)
+                    .padding(.bottom, 2)
                 Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:10, height:36)
             }
         }
@@ -212,21 +231,7 @@ struct ContentView: View {
     private var lightListView: some View {
 
         VStack {
-            // Color Picker
-           /* ColorPicker("Select Color", selection: .constant(Color.blue))
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.white.opacity(0.8))
-                .cornerRadius(40)
 
-            // Brightness Slider
-            HStack {
-                Text("Brightness")
-                Slider(value: .constant(0.5), in: 0...1)
-                    .accentColor(.yellow)
-            }
-            .padding()
-*/
             List {
                 ForEach(hueManager.lights) { light in
                     
@@ -242,14 +247,7 @@ struct ContentView: View {
             .refreshable {
                 hueManager.fetchLights()
             }
-//            .toolbar {
-//                Button("Reset", role: .destructive) {
-//                    UserDefaults.standard.removeObject(forKey: "bridgeIP")
-//                    UserDefaults.standard.removeObject(forKey: "apiKey")
-//                    hueManager.bridgeIP = nil
-//                    hueManager.apiKey = nil
-//                }
-//            }
+
         }
         .background(Color(hex: 0xCCE0F7))
     }
