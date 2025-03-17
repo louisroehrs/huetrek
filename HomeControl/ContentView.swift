@@ -344,6 +344,7 @@ struct ContentView: View {
                     .padding(.bottom,2)
                     .foregroundColor(Color(hex:0xCCE0F7))
                     .layoutPriority(1)
+                    .frame(minWidth: 180)
                     
                 Rectangle(radius: 40)
                     .fill(Color(hex:0xCCE0F7))
