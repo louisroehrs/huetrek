@@ -1,13 +1,13 @@
 //
-//  HomeControlUITestsLaunchTests.swift
-//  HomeControlUITests
+//  HueTrekUITestsLaunchTests.swift
+//  HueTrekUITests
 //
 //  Created by Louis Roehrs on 3/10/25.
 //
 
 import XCTest
 
-final class HomeControlUITestsLaunchTests: XCTestCase {
+final class HueTrekUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

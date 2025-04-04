@@ -1,6 +1,6 @@
 //
-//  HomeControlApp.swift
-//  HomeControl
+//  HueTrekApp.swift
+//  HueTrek
 //
 //  Created by Louis Roehrs on 3/10/25.
 //
@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct HomeControlApp: App {
+struct HueTrekApp: App {
 /*    var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,

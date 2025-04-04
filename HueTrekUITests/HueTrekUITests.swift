@@ -1,13 +1,13 @@
 //
-//  HomeControlUITests.swift
-//  HomeControlUITests
+//  HueTrekUITests.swift
+//  HueTrekUITests
 //
 //  Created by Louis Roehrs on 3/10/25.
 //
 
 import XCTest
 
-final class HomeControlUITests: XCTestCase {
+final class HueTrekUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
