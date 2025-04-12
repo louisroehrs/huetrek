@@ -126,13 +126,14 @@ struct BottomLeftRoundedRectangle: Shape {
 struct ContentView: View {
     @EnvironmentObject private var hueManager: HueManager
     @State private var showingPairingAlert = false
-    @State private var selectedHub: Hub = .mardell
+    @State private var isEditingBridgeName = false
+    @State private var editedBridgeName = ""
+    @State private var showingBridgeSelector = false
     
     var body: some View {
         NavigationView {
             Group {
                 if hueManager.bridgeIP == nil {
-                    // pairingView
                     discoveryView
                 } else if hueManager.apiKey == nil {
                     pairingView
@@ -145,7 +146,9 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     HStack {
-                        BottomLeftRoundedRectangle(radius:30).fill(Color.mint).frame(width:50,height:30)
+                        BottomLeftRoundedRectangle(radius:30)
+                            .fill(Color.mint)
+                            .frame(width:50,height:30)
                         
                         if hueManager.bridgeIP == nil {
                             Text("SCANNING")
@@ -153,26 +156,46 @@ struct ContentView: View {
                                 .font(Font.custom("Okuda Bold", size: 40))
                                 .foregroundStyle(Color.blue)
                                 .padding(.bottom, 1)
-                                
                         } else if hueManager.apiKey == nil {
                             Text("PAIRING")
                                 .font(Font.custom("Okuda Bold", size: 40))
                                 .foregroundStyle(Color.blue)
-                                .layoutPriority(1).padding(.bottom, 1)
+                                .layoutPriority(1)
+                                .padding(.bottom, 1)
                         } else {
-                            Text("MARDELL")
+                            if isEditingBridgeName {
+                                TextField("", text: $editedBridgeName, onCommit: {
+                                    hueManager.updateBridgeName(editedBridgeName)
+                                    isEditingBridgeName = false
+                                })
                                 .font(Font.custom("Okuda Bold", size: 40))
                                 .foregroundStyle(Color.blue)
-                                .layoutPriority(1).padding(.bottom, 1)
+                                .multilineTextAlignment(.center)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .frame(width: 200)
+                                .layoutPriority(1)
+                                .padding(.bottom, 1)
+                            } else {
+                                Text(hueManager.currentBridgeConfig?.name ?? "BRIDGE")
+                                    .font(Font.custom("Okuda Bold", size: 40))
+                                    .foregroundStyle(Color.blue)
+                                    .layoutPriority(1)
+                                    .padding(.bottom, 1)
+                                    .onTapGesture {
+                                        showingBridgeSelector = true
+                                    }
+                            }
                         }
                         Rectangle()
                             .fill(Color.mint)
                             .frame(maxHeight:30)
                             .layoutPriority(0)
-                       
                     }
                 }
-                }
+            }
+            .sheet(isPresented: $showingBridgeSelector) {
+                BridgeSelectorView()
+            }
             .alert("Error", isPresented: .constant(hueManager.error != nil)) {
                  Button("OK") {
                     hueManager.error = nil
@@ -540,6 +563,70 @@ struct LightRowView: View {
     }
     
 
+}
+
+struct BridgeSelectorView: View {
+    @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject private var hueManager: HueManager
+    @State private var isEditingName = false
+    @State private var editedName = ""
+    @State private var editingBridgeId: UUID?
+    
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(hueManager.bridgeConfigurations) { config in
+                    HStack {
+                        if isEditingName && editingBridgeId == config.id {
+                            TextField("Bridge Name", text: $editedName, onCommit: {
+                                if editingBridgeId == hueManager.currentBridgeConfig?.id {
+                                    hueManager.updateBridgeName(editedName)
+                                }
+                                isEditingName = false
+                                editingBridgeId = nil
+                            })
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        } else {
+                            Text(config.name)
+                                .font(Font.custom("Okuda", size: 24))
+                                .foregroundColor(.blue)
+                        }
+                        
+                        Spacer()
+                        
+                        if config.id == hueManager.currentBridgeConfig?.id {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        hueManager.switchToBridge(withId: config.id)
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                    .contextMenu {
+                        Button("Rename") {
+                            editingBridgeId = config.id
+                            editedName = config.name
+                            isEditingName = true
+                        }
+                        Button("Delete", role: .destructive) {
+                            hueManager.removeBridge(withId: config.id)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Select Bridge")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
+        }
+    }
 }
 
 #Preview {

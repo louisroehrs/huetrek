@@ -3,22 +3,46 @@ import Network
 import SwiftUI
 import AVFoundation // Import AVFoundation for audio playback
 
+struct BridgeConfiguration: Codable, Identifiable {
+    let id: UUID
+    var name: String
+    var bridgeIP: String
+    var apiKey: String
+    
+    init(name: String, bridgeIP: String, apiKey: String) {
+        self.id = UUID()
+        self.name = name
+        self.bridgeIP = bridgeIP
+        self.apiKey = apiKey
+    }
+}
 
 class HueManager: ObservableObject {
-    @Published var bridgeIP: String? {
+    @Published var bridgeConfigurations: [BridgeConfiguration] {
         didSet {
-            if let ip = bridgeIP {
-                UserDefaults.standard.set(ip, forKey: "bridgeIP")
+            if let encoded = try? JSONEncoder().encode(bridgeConfigurations) {
+                UserDefaults.standard.set(encoded, forKey: "bridgeConfigurations")
             }
         }
     }
-    @Published var apiKey: String? {
+    
+    @Published var currentBridgeConfig: BridgeConfiguration? {
         didSet {
-            if let key = apiKey {
-                UserDefaults.standard.set(key, forKey: "apiKey")
+            if let config = currentBridgeConfig {
+                UserDefaults.standard.set(config.id.uuidString, forKey: "currentBridgeId")
+                bridgeIP = config.bridgeIP
+                apiKey = config.apiKey
+                fetchLights()
+            } else {
+                bridgeIP = nil
+                apiKey = nil
+                lights = []
             }
         }
     }
+    
+    @Published var bridgeIP: String?
+    @Published var apiKey: String?
     @Published var lights: [Light] = []
     @Published var isDiscovering = false
     @Published var noDiscoveryAttempts = true
@@ -48,21 +72,51 @@ class HueManager: ObservableObject {
     }
     
     init() {
-        // Load saved bridge configuration
-        
-        //#if DEBUG
-        //UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
-        //#endif
-        
-        bridgeIP = UserDefaults.standard.string(forKey: "bridgeIP")
-        apiKey = UserDefaults.standard.string(forKey: "apiKey")
-        
-        if bridgeIP != nil && apiKey != nil {
-            fetchLights()
+        // Load saved bridge configurations
+        if let data = UserDefaults.standard.data(forKey: "bridgeConfigurations"),
+           let decoded = try? JSONDecoder().decode([BridgeConfiguration].self, from: data) {
+            self.bridgeConfigurations = decoded
+        } else {
+            self.bridgeConfigurations = []
         }
-        //else {
-        //    fetchLightsMock()
-        // }
+        
+        // Load current bridge configuration
+        if let currentBridgeId = UserDefaults.standard.string(forKey: "currentBridgeId"),
+           let uuid = UUID(uuidString: currentBridgeId),
+           let config = bridgeConfigurations.first(where: { $0.id == uuid }) {
+            self.currentBridgeConfig = config
+        } else {
+            self.currentBridgeConfig = nil
+        }
+    }
+    
+    func addNewBridgeConfiguration(name: String) {
+        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
+        let newConfig = BridgeConfiguration(name: name, bridgeIP: bridgeIP, apiKey: apiKey)
+        bridgeConfigurations.append(newConfig)
+        currentBridgeConfig = newConfig
+    }
+    
+    func updateBridgeName(_ newName: String) {
+        guard var currentConfig = currentBridgeConfig else { return }
+        if let index = bridgeConfigurations.firstIndex(where: { $0.id == currentConfig.id }) {
+            currentConfig.name = newName
+            bridgeConfigurations[index] = currentConfig
+            currentBridgeConfig = currentConfig
+        }
+    }
+    
+    func switchToBridge(withId id: UUID) {
+        if let config = bridgeConfigurations.first(where: { $0.id == id }) {
+            currentBridgeConfig = config
+        }
+    }
+    
+    func removeBridge(withId id: UUID) {
+        bridgeConfigurations.removeAll(where: { $0.id == id })
+        if currentBridgeConfig?.id == id {
+            currentBridgeConfig = bridgeConfigurations.first
+        }
     }
     
     func discoverBridge() {
@@ -146,7 +200,6 @@ class HueManager: ObservableObject {
     func pairWithBridge() {
         guard let bridgeIP = bridgeIP else { return }
         
-        print(bridgeIP)
         let url = URL(string: "http://\(bridgeIP)/api")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -158,6 +211,8 @@ class HueManager: ObservableObject {
                    let response = try? JSONDecoder().decode([BridgeResponse].self, from: data),
                    let success = response.first?.success {
                     self?.apiKey = success.username
+                    // Add new bridge configuration with default name
+                    self?.addNewBridgeConfiguration(name: "Bridge \(self?.bridgeConfigurations.count ?? 0 + 1)")
                     self?.fetchLights()
                 } else if let error = error {
                     self?.error = error.localizedDescription
