@@ -48,6 +48,8 @@ class HueManager: ObservableObject {
     @Published var noDiscoveryAttempts = true
     @Published var error: String?
     
+    @Published var sensors: [Sensor] = []
+    
     private var audioPlayer: AVAudioPlayer?
     
     struct Light: Identifiable, Codable {
@@ -69,6 +71,29 @@ class HueManager: ObservableObject {
             var reachable: Bool
         }
     
+    }
+    
+    struct Sensor: Identifiable, Codable {
+        let id: String
+        var name: String
+        var type: String
+        var manufacturername: String
+        var productname: String
+        var state: SensorState
+        var config: SensorConfig
+        
+        struct SensorState: Codable {
+            var rotaryevent: Int?
+            var expectedrotation: Int?
+            var expectedeventduration: Int?
+            var lastupdated: String?
+        }
+        
+        struct SensorConfig: Codable {
+            var on: Bool
+            var battery: Int
+            var reachable: Bool
+        }
     }
     
     init() {
@@ -197,7 +222,7 @@ class HueManager: ObservableObject {
         udpSocket.start(queue: .global())
     }
     
-    func pairWithBridge() {
+    func pairWithBridge(completion: (() -> Void)? = nil) {
         guard let bridgeIP = bridgeIP else { return }
         
         let url = URL(string: "http://\(bridgeIP)/api")!
@@ -214,6 +239,7 @@ class HueManager: ObservableObject {
                     // Add new bridge configuration with default name
                     self?.addNewBridgeConfiguration(name: "Bridge \(self?.bridgeConfigurations.count ?? 0 + 1)")
                     self?.fetchLights()
+                    completion?()
                 } else if let error = error {
                     self?.error = error.localizedDescription
                 }
@@ -464,6 +490,71 @@ class HueManager: ObservableObject {
         URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
             DispatchQueue.main.async {
                 self?.fetchLights()
+            }
+        }.resume()
+    }
+    
+    func fetchSensors() {
+        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
+        
+        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/sensors")!
+        
+        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    self?.error = error.localizedDescription
+                    return
+                }
+                
+                guard let data = data else {
+                    self?.error = "No data received"
+                    return
+                }
+                
+                do {
+                    if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
+                        self?.sensors = json.compactMap { (key, value) -> Sensor? in
+                            guard let sensorData = value as? [String: Any],
+                                  let name = sensorData["name"] as? String,
+                                  let type = sensorData["type"] as? String,
+                                  let manufacturer = sensorData["manufacturername"] as? String,
+                                  let productName = sensorData["productname"] as? String,
+                                  let stateData = sensorData["state"] as? [String: Any],
+                                  let configData = sensorData["config"] as? [String: Any],
+                                  let on = configData["on"] as? Bool,
+                                  let battery = configData["battery"] as? Int,
+                                  let reachable = configData["reachable"] as? Bool else {
+                                return nil
+                            }
+                            
+                            let state = Sensor.SensorState(
+                                rotaryevent: stateData["rotaryevent"] as? Int,
+                                expectedrotation: stateData["expectedrotation"] as? Int,
+                                expectedeventduration: stateData["expectedeventduration"] as? Int,
+                                lastupdated: stateData["lastupdated"] as? String
+                            )
+                            
+                            let config = Sensor.SensorConfig(
+                                on: on,
+                                battery: battery,
+                                reachable: reachable
+                            )
+                            
+                            return Sensor(
+                                id: key,
+                                name: name,
+                                type: type,
+                                manufacturername: manufacturer,
+                                productname: productName,
+                                state: state,
+                                config: config
+                            )
+                        }
+                        self?.sensors.sort { $0.name < $1.name }
+                    }
+                } catch {
+                    self?.error = error.localizedDescription
+                }
             }
         }.resume()
     }

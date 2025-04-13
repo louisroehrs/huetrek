@@ -9,6 +9,12 @@ extension Color {
     }
 }
 
+
+enum ViewType {
+    case lights
+    case sensors
+}
+
 struct GlowingImageView: View {
     @State private var glow = false
     
@@ -123,22 +129,75 @@ struct BottomLeftRoundedRectangle: Shape {
     }
 }
 
+
+struct TabFooter: View {
+    @Binding var currentView: ViewType
+    
+    var body: some View {
+        HStack {
+            BottomLeftRoundedRectangle(radius: 36)
+                .fill(Color(hex:0xCCE0F7))
+                .frame(maxHeight: 36)
+                .layoutPriority(1)
+            
+            // Lights Tab
+            Text("LIGHTS")
+                .font(Font.custom("Okuda", size: 50))
+                .foregroundColor(currentView == .lights ? .blue : .gray)
+                .frame(height: 40)
+                .padding(.bottom, 2)
+                .onTapGesture {
+                    withAnimation {
+                        currentView = .lights
+                    }
+                }
+            
+            Rectangle(radius: 40)
+                .fill(Color(hex:0xCCE0F7))
+                .frame(width:10, height:36)
+            
+            // Sensors Tab
+            Text("SENSORS")
+                .font(Font.custom("Okuda", size: 50))
+                .foregroundColor(currentView == .sensors ? .blue : .gray)
+                .frame(height:36)
+                .padding(.bottom, 2)
+                .onTapGesture {
+                    withAnimation {
+                        currentView = .sensors
+                    }
+                }
+            
+            Rectangle(radius: 40)
+                .fill(Color(hex:0xCCE0F7))
+                .frame(width:10, height:36)
+        }
+    }
+}
+
 struct ContentView: View {
     @EnvironmentObject private var hueManager: HueManager
     @State private var showingPairingAlert = false
     @State private var isEditingBridgeName = false
     @State private var editedBridgeName = ""
     @State private var showingBridgeSelector = false
+    @State private var isAddingNewBridge = false
+    
+    @State var currentView: ViewType = ViewType.lights
     
     var body: some View {
         NavigationView {
             Group {
-                if hueManager.bridgeIP == nil {
+                if isAddingNewBridge {
+                    if hueManager.bridgeIP == nil {
+                        discoveryView
+                    } else {
+                        pairingView
+                    }
+                } else if hueManager.currentBridgeConfig == nil {
                     discoveryView
-                } else if hueManager.apiKey == nil {
-                    pairingView
                 } else {
-                    lightsView
+                    bridgeView
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -196,60 +255,7 @@ struct ContentView: View {
             .sheet(isPresented: $showingBridgeSelector) {
                 BridgeSelectorView()
             }
-            .alert("Error", isPresented: .constant(hueManager.error != nil)) {
-                 Button("OK") {
-                    hueManager.error = nil
-                 }
-            } message: {
-                 Text(hueManager.error ?? "")
-                    
-            }
-            .foregroundStyle(Color.white)
-
         }
-    }
-    
-    private var lightsView: some View {
-    
-        VStack {
-            HStack {// Header
-                TopLeftRoundedRectangle(radius: 40)
-                    .fill(Color(hex:0xCCE0F7))
-                    .frame(maxHeight: 40)
-                    .layoutPriority(1)
-                
-                Text("LIGHTS")
-                    .font(Font.custom("Okuda Bold", size: 55))
-                    .padding(.bottom,2)
-                    .foregroundColor(Color(hex:0xCCE0F7))
-                    .layoutPriority(1)
-                    
-                Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:60, height:40).padding(0)
-            }
-            .frame(maxHeight:40)
-            // Lights List
-            lightListView.background(Color.red).listRowSpacing(-10)
-
-            // Footer
-            HStack {
-                BottomLeftRoundedRectangle(radius: 36)
-                    .fill(Color(hex:0xCCE0F7))
-                    .frame(maxWidth: UIScreen.main.bounds.width/2, maxHeight: 36)
-                Text("LIGHTS")
-                    .font(Font.custom("Okuda", size: 50))
-                    .foregroundColor(.blue)
-                    .frame(height: 40).padding(.bottom, 2)
-                Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:10, height:36)
-                Text("SENSORS")
-                    .font(Font.custom("Okuda", size: 50))
-                    .foregroundColor(.blue)
-                    .frame(height:36)
-                    .padding(.bottom, 2)
-                Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:10, height:36)
-            }
-        }
-        .padding()
-        .background(Color.black.edgesIgnoringSafeArea(.all))
     }
     
     private var discoveryView: some View {
@@ -404,7 +410,11 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity, maxHeight:250)
                 
                     HStack(spacing:-5) {
-                        Button(action:hueManager.pairWithBridge) {
+                        Button(action: {
+                            hueManager.pairWithBridge {
+                                // Handle completion if needed
+                            }
+                        }) {
                             Text("START PAIRING")
                                 .font(Font.custom("Okuda Bold", size: 30))
                                 .foregroundColor(.white)
@@ -455,6 +465,64 @@ struct ContentView: View {
             }
         }
         .padding()
+        .background(Color.black).edgesIgnoringSafeArea(.all)
+
+    }
+    
+    private var bridgeView: some View {
+        VStack {
+            HStack {// Header
+                TopLeftRoundedRectangle(radius: 40)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(maxHeight: 40)
+                    .layoutPriority(1)
+                
+                Text(currentView == .lights ? "LIGHTS": "SENSORS")
+                    .font(Font.custom("Okuda Bold", size: 55))
+                    .padding(.bottom,2)
+                    .foregroundColor(Color(hex:0xCCE0F7))
+                    .layoutPriority(1)
+                    
+                Rectangle(radius: 40)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(width:60, height:40)
+                    .padding(0)
+            }
+            .frame(maxHeight:40)
+            
+            lightListView.background(Color.red).listRowSpacing(-10)
+
+                    
+            // Footer
+            HStack {
+                BottomLeftRoundedRectangle(radius: 36)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(maxHeight: 36)
+                Text("LIGHTS")
+                    .font(Font.custom("Okuda", size: 50))
+                    .foregroundColor(.blue)
+                    .frame(height: 40)
+                    .padding(.bottom, 2)
+                    .onTapGesture {
+                        currentView = .lights
+                    }
+                Rectangle(radius: 40)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(width:10, height:36)
+                Text("SWITCHES")
+                    .font(Font.custom("Okuda", size: 50))
+                    .foregroundColor(.blue)
+                    .frame(height:36)
+                    .padding(.bottom, 2)
+                    .onTapGesture {
+                        currentView = .sensors
+                    }
+                Rectangle(radius: 40)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(width:10, height:36)
+            } 
+        }
+        .padding()
         .background(Color.black.edgesIgnoringSafeArea(.all))
 
     }
@@ -487,7 +555,6 @@ struct ContentView: View {
 struct LightRowView: View {
     @EnvironmentObject private var hueManager: HueManager
     var light: HueManager.Light
-    
     
     var body: some View {
         VStack {
@@ -625,6 +692,127 @@ struct BridgeSelectorView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+struct SensorRowView: View {
+    let sensor: HueManager.Sensor
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(sensor.name)
+                        .font(Font.custom("Okuda", size: 24))
+                        .foregroundColor(.blue)
+                    
+                    Text(sensor.type)
+                        .font(Font.custom("Okuda", size: 16))
+                        .foregroundColor(.gray)
+                }
+                
+                Spacer()
+                
+                // Battery indicator
+                HStack(spacing: 2) {
+                    Image(systemName: "battery.100")
+                        .foregroundColor(sensor.config.battery > 20 ? .green : .red)
+                    Text("\(sensor.config.battery)%")
+                        .font(Font.custom("Okuda", size: 14))
+                        .foregroundColor(.gray)
+                }
+                
+                // Connection status
+                Circle()
+                    .fill(sensor.config.reachable ? Color.green : Color.red)
+                    .frame(width: 10, height: 10)
+            }
+            
+            if let lastUpdated = sensor.state.lastupdated {
+                Text("Last Updated: \(lastUpdated)")
+                    .font(Font.custom("Okuda", size: 14))
+                    .foregroundColor(.gray)
+            }
+            
+            if let rotaryEvent = sensor.state.rotaryevent {
+                Text("Rotary Event: \(rotaryEvent)")
+                    .font(Font.custom("Okuda", size: 14))
+                    .foregroundColor(.blue)
+            }
+        }
+        .padding()
+        .background(Color.black)
+        .cornerRadius(10)
+    }
+}
+
+struct SensorsView: View {
+    @EnvironmentObject private var hueManager: HueManager
+    
+    var body: some View {
+        VStack {
+            HStack {// Header
+                TopLeftRoundedRectangle(radius: 40)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(maxHeight: 40)
+                    .layoutPriority(1)
+                
+                Text("SENSORS")
+                    .font(Font.custom("Okuda Bold", size: 55))
+                    .padding(.bottom,2)
+                    .foregroundColor(Color(hex:0xCCE0F7))
+                    .layoutPriority(1)
+                    
+                Rectangle(radius: 40)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(width:60, height:40)
+                    .padding(0)
+            }
+            .frame(maxHeight:40)
+            
+            List {
+                ForEach(hueManager.sensors) { sensor in
+                    SensorRowView(sensor: sensor)
+                        .listRowBackground(Color.black)
+                        .background(Color.black)
+                }
+            }
+            .listStyle(.plain)
+            .padding(.leading, 12)
+            .scrollContentBackground(.hidden)
+            .refreshable {
+                hueManager.fetchSensors()
+            }
+            
+            // Footer
+            HStack {
+                BottomLeftRoundedRectangle(radius: 36)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(maxHeight: 36)
+                    .layoutPriority(1)
+                Text("LIGHTS")
+                    .font(Font.custom("Okuda", size: 50))
+                    .foregroundColor(.blue)
+                    .frame(height: 40)
+                    .padding(.bottom, 2)
+                Rectangle(radius: 40)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(width:10, height:36)
+                Text("SENSORS")
+                    .font(Font.custom("Okuda", size: 50))
+                    .foregroundColor(.blue)
+                    .frame(height:36)
+                    .padding(.bottom, 2)
+                Rectangle(radius: 40)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(width:10, height:36)
+            }
+        }
+        .padding()
+        .background(Color.black.edgesIgnoringSafeArea(.all))
+        .onAppear {
+            hueManager.fetchSensors()
         }
     }
 }
