@@ -6,6 +6,13 @@
 //
 
 import SwiftUI
+//
+//  HueTrekApp.swift
+//  HueTrek
+//
+//  Created by Louis Roehrs on 4/13/25.
+//
+
 import SwiftData
 
 @main

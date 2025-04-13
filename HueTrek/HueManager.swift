@@ -1,3 +1,10 @@
+//
+//  HueManager.swift
+//  HueTrek
+//
+//  Created by Louis Roehrs on 4/13/25.
+//
+
 import Foundation
 import Network
 import SwiftUI
@@ -49,6 +56,35 @@ class HueManager: ObservableObject {
     @Published var error: String?
     
     @Published var sensors: [Sensor] = []
+    
+    struct Group: Identifiable, Codable {
+        let id: String
+        var name: String
+        var lights: [String]
+        var type: String
+        var state: GroupState
+        var action: GroupAction
+        var `class`: String
+        
+        struct GroupState: Codable {
+            var all_on: Bool
+            var any_on: Bool
+        }
+        
+        struct GroupAction: Codable {
+            var on: Bool
+            var bri: Int
+            var hue: Int
+            var sat: Int
+            var effect: String?
+            var xy: [Double]?
+            var ct: Int?
+            var alert: String?
+            var colormode: String?
+        }
+    }
+    
+    @Published var groups: [Group] = []
     
     private var audioPlayer: AVAudioPlayer?
     
@@ -555,6 +591,125 @@ class HueManager: ObservableObject {
                 } catch {
                     self?.error = error.localizedDescription
                 }
+            }
+        }.resume()
+    }
+    
+    func fetchGroups() {
+        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
+        
+        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
+        
+        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    self?.error = error.localizedDescription
+                    return
+                }
+                
+                guard let data = data else {
+                    self?.error = "No data received"
+                    return
+                }
+                
+                do {
+                    if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
+                        self?.groups = json.compactMap { (key, value) -> Group? in
+                            guard let groupData = value as? [String: Any],
+                                  let name = groupData["name"] as? String,
+                                  let lights = groupData["lights"] as? [String],
+                                  let type = groupData["type"] as? String,
+                                  let stateData = groupData["state"] as? [String: Any],
+                                  let actionData = groupData["action"] as? [String: Any],
+                                  let className = groupData["class"] as? String else {
+                                return nil
+                            }
+                            
+                            let state = Group.GroupState(
+                                all_on: stateData["all_on"] as? Bool ?? false,
+                                any_on: stateData["any_on"] as? Bool ?? false
+                            )
+                            
+                            let action = Group.GroupAction(
+                                on: actionData["on"] as? Bool ?? false,
+                                bri: actionData["bri"] as? Int ?? 0,
+                                hue: actionData["hue"] as? Int ?? 0,
+                                sat: actionData["sat"] as? Int ?? 0,
+                                effect: actionData["effect"] as? String,
+                                xy: actionData["xy"] as? [Double],
+                                ct: actionData["ct"] as? Int,
+                                alert: actionData["alert"] as? String,
+                                colormode: actionData["colormode"] as? String
+                            )
+                            
+                            return Group(
+                                id: key,
+                                name: name,
+                                lights: lights,
+                                type: type,
+                                state: state,
+                                action: action,
+                                class: className
+                            )
+                        }
+                        self?.groups.sort { $0.name < $1.name }
+                    }
+                } catch {
+                    self?.error = error.localizedDescription
+                }
+            }
+        }.resume()
+    }
+    
+    func toggleGroup(_ group: Group) {
+        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
+        
+        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups/\(group.id)/action")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.httpBody = try? JSONEncoder().encode(["on": !group.action.on])
+        
+        URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
+            DispatchQueue.main.async {
+                self?.fetchGroups()
+            }
+        }.resume()
+    }
+    
+    func setBrightness(_ brightness: Int, for group: Group) {
+        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
+        
+        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups/\(group.id)/action")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.httpBody = try? JSONEncoder().encode(["bri": brightness])
+        
+        URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
+            DispatchQueue.main.async {
+                self?.fetchGroups()
+            }
+        }.resume()
+    }
+    
+    func updateGroupColor(_ group: Group, color: Color) {
+        let components = color.cgColor?.components ?? [0, 0, 0, 1]
+        let (hue, saturation, brightness) = rgbToHsb(red: components[0], green: components[1], blue: components[2])
+        
+        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
+        
+        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups/\(group.id)/action")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        let body: [String: Any] = [
+            "hue": Int(hue * 65535),
+            "sat": Int(saturation * 255),
+            "bri": Int(brightness * 254)
+        ]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        
+        URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
+            DispatchQueue.main.async {
+                self?.fetchGroups()
             }
         }.resume()
     }
