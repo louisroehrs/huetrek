@@ -45,10 +45,8 @@ struct BridgeView: View {
                     SensorsView().listRowSpacing(-10)
                 case .groups:
                     GroupsView().listRowSpacing(-10)
-                default:
-                    LightsView().listRowSpacing(-10)
             }
-            
+
             // Footer
             HStack {
                 BottomLeftRoundedRectangle(radius: 36)
@@ -93,11 +91,9 @@ struct BridgeView: View {
                             { currentView = .sensors}
                         )
                     }
-                
                 Rectangle(radius: 40)
                     .fill(Color(hex:0xCCE0F7))
                     .frame(width:10, height:36)
-                
             }
         }
         .padding()

@@ -489,7 +489,6 @@ class HueManager: ObservableObject {
     }
     
     func toggleColorPicker(_ light: Light) {
-        playSound(sound: "colorpickerslideup")
         if let index = lights.firstIndex(where: { $0.id == light.id }) {
             lights[index].isColorPickerVisible.toggle()
         }

@@ -38,6 +38,10 @@ struct SensorRowView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            Rectangle()
+                .fill(Color.cyan)
+                .frame(height:10)
+                .padding(0)
             HStack {
                 VStack(alignment: .leading) {
                     Text(sensor.name)

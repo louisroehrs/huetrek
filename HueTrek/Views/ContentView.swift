@@ -16,9 +16,6 @@ extension Color {
     }
 }
 
-
-
-
 struct GlowingImageView: View {
     @State private var glow = false
     
@@ -166,7 +163,6 @@ struct ContentView: View {
                         BottomLeftRoundedRectangle(radius:30)
                             .fill(Color.mint)
                             .frame(width:50,height:30)
-                        
                         if hueManager.bridgeIP == nil {
                             Text("SCANNING")
                                 .layoutPriority(5)
@@ -199,6 +195,7 @@ struct ContentView: View {
                                     .layoutPriority(1)
                                     .padding(.bottom, 1)
                                     .onTapGesture {
+                                        hueManager.playSound(sound: "colorpickerslideup")
                                         showingBridgeSelector = true
                                     }
                             }
@@ -215,9 +212,7 @@ struct ContentView: View {
             }
         }
     }
-
 }
-
 
 struct BridgeSelectorView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -240,6 +235,7 @@ struct BridgeSelectorView: View {
                                 editingBridgeId = nil
                             })
                             .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .foregroundColor(.blue)
                         } else {
                             Text(config.name)
                                 .font(Font.custom("Okuda", size: 24))
@@ -255,6 +251,7 @@ struct BridgeSelectorView: View {
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
+                        hueManager.playSound(sound: "colorpickerslidedown")
                         hueManager.switchToBridge(withId: config.id)
                         presentationMode.wrappedValue.dismiss()
                     }
@@ -270,16 +267,19 @@ struct BridgeSelectorView: View {
                     }
                 }
             }
+            .background(Color.black)
             .navigationTitle("Select Bridge")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
+                        hueManager.playSound(sound: "colorpickerslidedown")
                         presentationMode.wrappedValue.dismiss()
                     }
                 }
             }
         }
+       
     }
 }
 
