@@ -59,6 +59,7 @@ struct BridgeView: View {
                     .padding(.bottom, 2)
                     .layoutPriority(1)
                     .onTapGesture {
+                        hueManager.playSound(sound: "lightpanel")
                         withAnimation(Animation.easeInOut(duration: 0.5),
                             { currentView = .lights}
                         )
@@ -73,7 +74,8 @@ struct BridgeView: View {
                     .padding(.bottom, 2)
                     .layoutPriority(1)
                     .onTapGesture {
-                        withAnimation(Animation.easeInOut(duration: 0.5), 
+                        hueManager.playSound(sound: "panelswitch")
+                        withAnimation(Animation.easeInOut(duration: 0.5),
                             { currentView = .groups}
                         )
                     }
@@ -87,7 +89,8 @@ struct BridgeView: View {
                     .padding(.bottom, 2)
                     .layoutPriority(1)
                     .onTapGesture {
-                        withAnimation(Animation.easeInOut(duration: 0.5), 
+                        hueManager.playSound(sound: "panelswitch")   
+                        withAnimation(Animation.easeInOut(duration: 0.5),
                             { currentView = .sensors}
                         )
                     }

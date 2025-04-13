@@ -220,6 +220,7 @@ struct BridgeSelectorView: View {
     @State private var isEditingName = false
     @State private var editedName = ""
     @State private var editingBridgeId: UUID?
+    @FocusState private var isFocused: Bool
     
     var body: some View {
         NavigationView {
@@ -234,8 +235,13 @@ struct BridgeSelectorView: View {
                                 isEditingName = false
                                 editingBridgeId = nil
                             })
+                            .font(Font.custom("Okuda", size: 24))
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .foregroundColor(.blue)
+                            .focused($isFocused)  // Add focus binding
+                            .onAppear {
+                                isFocused = true  // Automatically focus when TextField appears
+                            } 
                         } else {
                             Text(config.name)
                                 .font(Font.custom("Okuda", size: 24))
