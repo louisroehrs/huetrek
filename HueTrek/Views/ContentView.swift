@@ -273,7 +273,9 @@ struct BridgeSelectorView: View {
                     }
                 }
             }
-            .background(Color.black)
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden) // Hide default list background
+            .background(Color.black) // Set the list background to black
             .navigationTitle("Select Bridge")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -285,7 +287,8 @@ struct BridgeSelectorView: View {
                 }
             }
         }
-       
+        .background(Color.black.edgesIgnoringSafeArea(.all)) // Set the NavigationView background
+        .preferredColorScheme(.dark) // Optional: ensure dark mode for the sheet
     }
 }
 
