@@ -27,7 +27,15 @@ struct SensorsView: View {
                 hueManager.fetchSensors()
             }
         }
-        .background(Color(hex: 0xCCE0F7))
+        .background(Color(hex: 0x000000))
+        .overlay(
+            // Left border
+            Rectangle()
+                .frame(width: 12)
+                .foregroundColor(Color(hex: 0xCCE0F7))
+                .padding(.vertical, 0),
+            alignment: .leading
+        )
     }
 }
 
