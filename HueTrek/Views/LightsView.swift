@@ -60,9 +60,9 @@ struct LightRowView: View {
                         hueManager.toggleLight(light)
                     }
                 
-                Image(systemName: light.state.on ? "sun.max.fill" : "sun.min")
+                Image(systemName: light.state.on! ? "sun.max.fill" : "sun.min")
                     .imageScale(.large)
-                    .foregroundColor(light.state.on ? .yellow : .black)
+                    .foregroundColor(light.state.on! ? .yellow : .black)
                     .frame(width:40, height:40)
                     .background(Color.black)
                     .onTapGesture {
@@ -72,7 +72,7 @@ struct LightRowView: View {
                 
                 Image(systemName: "paintpalette.fill")
                     .imageScale(.large)
-                    .foregroundColor(Color(hue: Double(light.state.hue) / 65536.0, saturation: Double(light.state.sat) / 255.0, brightness: Double(light.state.bri) / 254.0))
+                    .foregroundColor(Color(hue: Double(light.state.hue!) / 65536.0, saturation: Double(light.state.sat!) / 255.0, brightness: Double(light.state.bri!) / 254.0))
                     .frame(width:40, height:40)
                     .background(Color.black)
                     .clipped()
@@ -99,7 +99,7 @@ struct LightRowView: View {
                 
             }
             if light.isColorPickerVisible {
-                ColorPicker("SELECT COLOR", selection: .constant(Color(hue: Double(light.state.hue) / 65536.0, saturation: Double(light.state.sat) / 255.0, brightness: Double(light.state.bri) / 254.0)))
+                ColorPicker("SELECT COLOR", selection: .constant(Color(hue: Double(light.state.hue!) / 65536.0, saturation: Double(light.state.sat!) / 255.0, brightness: Double(light.state.bri!) / 254.0)))
                     .font(Font.custom("Okuda", size: 30))
                     .padding()
                     .frame(maxWidth: .infinity)

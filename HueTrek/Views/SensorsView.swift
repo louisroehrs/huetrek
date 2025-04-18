@@ -48,7 +48,7 @@ struct SensorRowView: View {
         VStack(alignment: .leading, spacing: 8) {
             Rectangle()
                 .fill(Color.cyan)
-                .frame(height:10)
+                .frame(height:2)
                 .padding(0)
             HStack {
                 VStack(alignment: .leading) {

@@ -40,6 +40,7 @@ class HueManager: ObservableObject {
                 bridgeIP = config.bridgeIP
                 apiKey = config.apiKey
                 fetchLights()
+                fetchGroups()
             } else {
                 bridgeIP = nil
                 apiKey = nil
@@ -100,10 +101,10 @@ class HueManager: ObservableObject {
         }
         
         struct State: Codable {
-            var on: Bool
-            var bri: Int
-            var hue: Int
-            var sat: Int
+            var on: Bool?
+            var bri: Int?
+            var hue: Int?
+            var sat: Int?
             var reachable: Bool
         }
     
@@ -285,9 +286,9 @@ class HueManager: ObservableObject {
     
     func hueLightToSwiftColor(light: Light) -> Color {
         return Color(
-            hue: Double(light.state.hue) / 65536.0,
-            saturation: Double(light.state.sat) / 255.0,
-            brightness: Double(light.state.bri) / 254.0)
+            hue: Double(light.state.hue!) / 65536.0,
+            saturation: Double(light.state.sat!) / 255.0,
+            brightness: Double(light.state.bri!) / 254.0)
     }
     
     func updateColor(light: Light, color: Color) {
@@ -400,21 +401,28 @@ class HueManager: ObservableObject {
                 
                 do {
                     print(" do do do")
-                    if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any],
-                       let lights = json as? [String: Any] {
-                        self?.lights = lights.map { (key, value) in
-                            // probably a more straightforward way to assign Light.State but this works
-                            let name = (value as? [String: Any])?["name"] as? String ?? ""
-                            let hue = ((value as? [String: Any])?["state"] as? [String: Any])?["hue"] as? Int ?? 0
-                            let on = ((value as? [String: Any])?["state"] as? [String: Any])?["on"] as? Bool ?? false
-                            let bri = ((value as? [String: Any])?["state"] as? [String: Any])?["bri"] as? Int ?? 0
-                            let sat = ((value as? [String: Any])?["state"] as? [String: Any])?["sat"] as? Int ?? 0
-                            let state =  HueManager.Light.State(on: on, bri:bri, hue:hue, sat:sat, reachable: true)
+                    if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
+                        self?.lights = json.compactMap { (key, value) -> Light? in
+                            guard let lightData = value as?[String: Any],
+                                  let name = lightData["name"] as? String,
+                                  let stateData = lightData["state"] as? [String: Any]
+                            else {
+                                return nil
+                            }
+                                    
+                            let state =  Light.State(
+                                on:  stateData["on"] as? Bool ?? false,
+                                bri: stateData["bri"] as? Int ?? 0,
+                                hue: stateData["hue"] as? Int ?? 0,
+                                sat: stateData["sat"] as? Int ?? 0,
+                                reachable: true)
                             // TODO: fix reachable...
+                                    
+                        
 
                             var thisLight = Light(id: key, name: name, state: state)
                             thisLight.selectedColor = self?.hueLightToSwiftColor(light: thisLight)
-                            // print(thisLight)
+
                             return thisLight
                         }
                         self?.lights.sort { $0.name < $1.name }
@@ -496,7 +504,7 @@ class HueManager: ObservableObject {
     func toggleLight(_ light: Light) {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         print("Toggle light \(light.name)")  // Play sound
-        if light.state.on {
+        if light.state.on! {
             playSound(sound: "lightOff")
         } else {
             playSound(sound: "lightOn")
@@ -505,7 +513,7 @@ class HueManager: ObservableObject {
         let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights/\(light.id)/state")!
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
-        request.httpBody = try? JSONEncoder().encode(["on": !light.state.on])
+        request.httpBody = try? JSONEncoder().encode(["on": !light.state.on!])
         
         URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
             DispatchQueue.main.async {
@@ -597,8 +605,9 @@ class HueManager: ObservableObject {
     func fetchGroups() {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
-        
+        //let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
+        let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/groupsconfig.json")!
+        print("groupsfetch")
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
@@ -661,6 +670,7 @@ class HueManager: ObservableObject {
     }
     
     func toggleGroup(_ group: Group) {
+        print("toggle group \(group.name)")
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
         let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups/\(group.id)/action")!

@@ -33,7 +33,7 @@ struct BridgeView: View {
                 
                 Rectangle(radius: 40)
                     .fill(Color(hex:0xCCE0F7))
-                    .frame(width:60, height:40)
+                    .frame(width:40, height:40)
                     .padding(0)
             }
             .frame(maxHeight:40)
@@ -48,52 +48,67 @@ struct BridgeView: View {
             }
 
             // Footer
-            HStack {
+            HStack (spacing:2){
                 BottomLeftRoundedRectangle(radius: 36)
                     .fill(Color(hex:0xCCE0F7))
                     .frame(maxHeight: 36)
-                Text("LIGHTS")
-                    .font(Font.custom("Okuda", size: 50))
-                    .foregroundColor(.blue)
-                    .frame(height: 40)
-                    .padding(.bottom, 2)
-                    .layoutPriority(1)
-                    .onTapGesture {
-                        hueManager.playSound(sound: "lightpanel")
-                        withAnimation(Animation.easeInOut(duration: 0.5),
-                            { currentView = .lights}
-                        )
-                    }
-                Rectangle(radius: 40)
+                Rectangle()
                     .fill(Color(hex:0xCCE0F7))
-                    .frame(width:10, height:36)
-                Text("GROUPS")
-                    .font(Font.custom("Okuda", size: 50))
-                    .foregroundColor(.blue)
                     .frame(height:36)
-                    .padding(.bottom, 2)
-                    .layoutPriority(1)
-                    .onTapGesture {
-                        hueManager.playSound(sound: "panelswitch")
-                        withAnimation(Animation.easeInOut(duration: 0.5),
-                            { currentView = .groups}
-                        )
+                    .overlay(alignment: .trailing){
+                        Text("LIGHTS")
+                            .font(Font.custom("Okuda Bold", size: 30))
+                            .foregroundColor(.black)
+                            .padding(.bottom, -4)
+                            .padding(.trailing, 2)
+                            .layoutPriority(1)
+                            .onTapGesture {
+                                hueManager.playSound(sound: "panelswitch")
+                                withAnimation(Animation.easeInOut(duration: 0.5),
+                                              { currentView = .lights}
+                                )
+                            }
+                        
                     }
-                Rectangle(radius: 40)
+                
+                Rectangle()
                     .fill(Color(hex:0xCCE0F7))
-                    .frame(width:10, height:36)
-                Text("SW")
-                    .font(Font.custom("Okuda", size: 50))
-                    .foregroundColor(.blue)
                     .frame(height:36)
-                    .padding(.bottom, 2)
-                    .layoutPriority(1)
-                    .onTapGesture {
-                        hueManager.playSound(sound: "panelswitch")   
-                        withAnimation(Animation.easeInOut(duration: 0.5),
-                            { currentView = .sensors}
-                        )
+                    .overlay(alignment: .trailing){
+                        Text("GROUPS")
+                            .font(Font.custom("Okuda Bold", size: 30))
+                            .foregroundColor(.black)
+                            .padding(.bottom, -4)
+                            .padding(.trailing, 2)
+                            .layoutPriority(1)
+                            .onTapGesture {
+                                hueManager.playSound(sound: "panelswitch")
+                                withAnimation(Animation.easeInOut(duration: 0.5),
+                                              { currentView = .groups}
+                                )
+                            }
+                        
                     }
+                
+                Rectangle()
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(height:36)
+                    .overlay(alignment: .trailing){
+                        Text("SENSORS")
+                            .font(Font.custom("Okuda Bold", size: 30))
+                            .foregroundColor(.black)
+                            .padding(.bottom, -4)
+                            .padding(.trailing, 2)
+                            .layoutPriority(1)
+                            .onTapGesture {
+                                hueManager.playSound(sound: "panelswitch")
+                                withAnimation(Animation.easeInOut(duration: 0.5),
+                                              { currentView = .sensors}
+                                )
+                            }
+                        
+                    }
+                
                 Rectangle(radius: 40)
                     .fill(Color(hex:0xCCE0F7))
                     .frame(width:10, height:36)

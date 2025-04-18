@@ -12,6 +12,8 @@ struct GroupsView: View {
     
     var body: some View {
         VStack {
+            
+            
             List {
                 ForEach(hueManager.groups) { group in
                     GroupRowView(group: group)
@@ -21,6 +23,7 @@ struct GroupsView: View {
             }
             .listStyle(.plain)
             .padding(.leading, 12)
+            .padding(.trailing,0)
             .scrollContentBackground(.hidden)
             .refreshable {
                 hueManager.fetchGroups()
@@ -48,6 +51,10 @@ struct GroupRowView: View {
     var body: some View {
         
         VStack(spacing: 8) {
+            Rectangle()
+                .fill(Color.cyan)
+                .frame(height:2)
+                .padding(0)
             HStack {
                 VStack(alignment: .leading) {
                     Text(group.name)
@@ -81,42 +88,42 @@ struct GroupRowView: View {
                     .foregroundColor(.gray)
             }
             
-            // Color picker button
-            Button(action: { isColorPickerVisible.toggle() }) {
-                HStack {
-                    Text("Color")
-                        .font(Font.custom("Okuda", size: 16))
-                    Image(systemName: "chevron.right")
-                        .rotationEffect(.degrees(isColorPickerVisible ? 90 : 0))
-                }
-                .foregroundColor(.blue)
+            Image(systemName: "paintpalette.fill")
+                .imageScale(.large)
+                .foregroundColor(Color(hue: Double(group.action.hue) / 65536.0, saturation: Double(group.action.sat) / 255.0, brightness: Double(group.action.bri) / 254.0))
+                .frame(width:40, height:40)
+                .background(Color.black)
+                .clipped()
+                .overlay
+            {
+                ColorPicker(
+                    "",
+                    selection: Binding(
+                        get: { selectedColor ?? hueManager.hueLightToSwiftColor(light: HueManager.Light(
+                            id: group.id,
+                            name: group.name,
+                            state: HueManager.Light.State(
+                                on: group.action.on,
+                                bri: group.action.bri,
+                                hue: group.action.hue,
+                                sat: group.action.sat,
+                                reachable: true
+                            )
+                        ))
+                        },
+                        set: { newColor in
+                            selectedColor = newColor
+                            hueManager.updateGroupColor(group, color: newColor)
+                        }),
+                    supportsOpacity: false)
+                .labelsHidden()
+                .opacity(0.10)
+                .frame(width:40, height: 40)
+                .clipped()
             }
             
-            // Color picker
-            if isColorPickerVisible {
-                ColorPicker("Color", selection: Binding(
-                    get: { selectedColor ?? hueManager.hueLightToSwiftColor(light: HueManager.Light(
-                        id: group.id,
-                        name: group.name,
-                        state: HueManager.Light.State(
-                            on: group.action.on,
-                            bri: group.action.bri,
-                            hue: group.action.hue,
-                            sat: group.action.sat,
-                            reachable: true
-                        )
-                    )) },
-                    set: { newColor in
-                        selectedColor = newColor
-                        hueManager.updateGroupColor(group, color: newColor)
-                    }
-                ))
-                .padding(.top, 8)
-            }
         }
         .padding()
-        .background(Color.black)
-        .cornerRadius(10)
     }
 }
 

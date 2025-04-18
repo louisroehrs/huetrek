@@ -287,7 +287,7 @@ struct BridgeSelectorView: View {
                 }
             }
         }
-        .background(Color.black.edgesIgnoringSafeArea(.all)) // Set the NavigationView background
+        .background(Color.black.edgesIgnoringSafeArea(.all)) // Set th<e NavigationView background
         .preferredColorScheme(.dark) // Optional: ensure dark mode for the sheet
     }
 }
