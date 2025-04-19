@@ -23,7 +23,7 @@ struct BridgeSelectorView: View {
                         .fill(Color(hex:0xF5ED00))
                         .layoutPriority(1)
                         .overlay(alignment: .trailing) {
-                            Text( "Press and hold to rename or delete")
+                            Text( "Press and hold name to rename or delete")
                                 .textCase(.uppercase)
                                 .font(Font.custom("Okuda Bold", size: 25))
                                 .padding(.bottom,-10)
@@ -38,7 +38,7 @@ struct BridgeSelectorView: View {
                         .frame(width:40, height:40)
                         .padding(0)
                         .overlay(
-                            Image(systemName: "xmark")
+                            Image(systemName: "chevron.down")
                                 .foregroundColor(Color.black)
                                 .font(.system(size: 30))
                                 .padding(0)
@@ -85,6 +85,7 @@ struct BridgeSelectorView: View {
                                             .layoutPriority(1)
                                     }
                                 }
+                                .background(Color.black)
                             
                             if config.id == hueManager.currentBridgeConfig?.id {
                                 RightRoundedRectangle()
@@ -118,7 +119,6 @@ struct BridgeSelectorView: View {
                     }
                 }
                 .listStyle(.plain)
-                .background(Color.black)
                 .scrollContentBackground(.hidden) // Hide default list background
                 .background(Color.black) // Set the list background to black
                 .navigationBarTitleDisplayMode(.inline)
@@ -131,6 +131,7 @@ struct BridgeSelectorView: View {
                     alignment: .leading
                 )
 
+
                 HStack {
                     BottomLeftRoundedRectangle(radius:30)
                         .fill(Color(hex:0xFF9C00))
@@ -141,16 +142,31 @@ struct BridgeSelectorView: View {
                         .foregroundStyle(Color.blue)
                         .padding(.bottom, 1)
                         .layoutPriority(1)
+                    
                     Rectangle()
                         .fill(Color(hex:0xFF9C00))
                         .frame(maxHeight:30)
+                        .overlay( alignment: .trailing) {
+                            Text("ADD")
+                                .font(Font.custom("Okuda Bold", size: 30))
+                                .textCase(.uppercase)
+                                .foregroundColor(.black)
+                                .padding(.bottom, -4)
+                                .padding(.trailing, 1)
+                        }
+                        
+                    RightRoundedRectangle(radius: 15)
+                        .fill(Color(hex:0xFF9C00))
+                        .frame(width:.infinity, height:30)
+
                 }
                 .padding(0)
                 .background(Color.black)
-                
+                .listStyle(.plain)  
             }
+            .listStyle(.plain)
         }
-        .background(Color.black.edgesIgnoringSafeArea(.all)) // Set th<e NavigationView background
+        .background(Color.black.edgesIgnoringSafeArea(.all)) // Set the NavigationView background
         .preferredColorScheme(.dark) // Optional: ensure dark mode for the sheet
     }
 }

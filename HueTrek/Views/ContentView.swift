@@ -165,7 +165,7 @@ struct ContentView: View {
                             .frame(width:50,height:30)
                         if hueManager.bridgeIP == nil {
                             Text("SCANNING")
-                                .layoutPriority(5)
+                                .layoutPriority(1)
                                 .font(Font.custom("Okuda Bold", size: 40))
                                 .foregroundStyle(Color.blue)
                                 .padding(.bottom, 1)
@@ -193,23 +193,24 @@ struct ContentView: View {
                                     .textCase(.uppercase)
                                     .font(Font.custom("Okuda Bold", size: 40))
                                     .foregroundStyle(Color.blue)
-                                    .layoutPriority(1)
                                     .padding(.bottom, 1)
                                     .onTapGesture {
                                         hueManager.playSound(sound: "colorpickerslideup")
                                         showingBridgeSelector = true
                                     }
+                                    .layoutPriority(1)
                             }
                         }
                         Rectangle()
                             .fill(Color(hex:0xFF9C00))
-                            .frame(maxHeight:30)
+                            .frame(minWidth:40)
                     }
+                    .frame(maxHeight:30)
                 }
             }
             .sheet(isPresented: $showingBridgeSelector) {
                 BridgeSelectorView()
-            }
+            } 
         }
     }
 }
