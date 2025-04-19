@@ -102,13 +102,14 @@ struct PairingView: View {
                     .fill(Color(hex:0xCCE0F7))
                     .frame(maxHeight: 36)
                     .layoutPriority(1)
-                Text("RETRY")
+                Text("ABORT")
                     .font(Font.custom("Okuda", size: 50))
-                    .foregroundColor(.red)
+                    .foregroundColor(.blue)
                     .frame(height: 40).padding(.bottom, 2)
                     .layoutPriority(1)
                     .onTapGesture {
-                        hueManager.bridgeIP = nil
+                        hueManager.isDiscovering = false
+                        hueManager.isAddingNewBridge = false
                     }
                 
                 Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:40, height:36)
