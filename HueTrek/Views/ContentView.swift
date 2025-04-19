@@ -136,14 +136,13 @@ struct ContentView: View {
     @State private var isEditingBridgeName = false
     @State private var editedBridgeName = ""
     @State private var showingBridgeSelector = false
-    @State private var isAddingNewBridge = false
     
     @State var currentView: ViewType = ViewType.lights
     
     var body: some View {
         NavigationView {
             Group {
-                if isAddingNewBridge {
+                if hueManager.isAddingNewBridge {
                     if hueManager.bridgeIP == nil {
                         AnyView(DiscoveryView())
                     } else {

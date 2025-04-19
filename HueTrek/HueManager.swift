@@ -55,6 +55,7 @@ class HueManager: ObservableObject {
     @Published var isDiscovering = false
     @Published var noDiscoveryAttempts = true
     @Published var error: String?
+    @Published var isAddingNewBridge = false
     
     @Published var sensors: [Sensor] = []
     
@@ -183,6 +184,7 @@ class HueManager: ObservableObject {
     
     func discoverBridge() {
         isDiscovering = true
+        isAddingNewBridge = true
         noDiscoveryAttempts = false
         error = nil
         

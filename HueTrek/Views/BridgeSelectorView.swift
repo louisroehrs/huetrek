@@ -15,6 +15,12 @@ struct BridgeSelectorView: View {
     @State private var editingBridgeId: UUID?
     @FocusState private var isFocused: Bool
     
+    func addBridgeTapped() {
+        hueManager.discoverBridge()
+        hueManager.playSound(sound: "colorpickerslidedown")
+        hueManager.isAddingNewBridge = true
+    }
+    
     var body: some View {
         NavigationView {
             VStack (spacing: 4) {
@@ -153,7 +159,9 @@ struct BridgeSelectorView: View {
                                 .foregroundColor(.black)
                                 .padding(.bottom, -4)
                                 .padding(.trailing, 1)
+                                
                         }
+
                         
                     RightRoundedRectangle(radius: 15)
                         .fill(Color(hex:0xFF9C00))
@@ -162,7 +170,11 @@ struct BridgeSelectorView: View {
                 }
                 .padding(0)
                 .background(Color.black)
-                .listStyle(.plain)  
+                .listStyle(.plain)
+                .onTapGesture {
+                    addBridgeTapped()
+                    presentationMode.wrappedValue.dismiss()
+                }
             }
             .listStyle(.plain)
         }
