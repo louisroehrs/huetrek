@@ -18,46 +18,62 @@ struct BridgeView: View {
     @State var currentView: ViewType = .lights
     
     var body: some View {
+        var borderColor: Color {
+            switch currentView {
+            case .lights:
+                return Color(hex:0xED884C)
+            case .sensors:
+                return Color(hex:0x9c9cff)
+            case .groups:
+                return Color(hex:0x3399ff)
+            default:
+                return Color(hex:0x87eeff)
+            }
+        }
+            
+                
+        
         VStack {
-            HStack {// Header
+            HStack(spacing:3) {// Header
                 TopLeftRoundedRectangle(radius: 40)
-                    .fill(Color(hex:0xCCE0F7))
+                    .fill(borderColor)
                     .frame(maxHeight: 40)
                     .layoutPriority(1)
                 
                 Text( currentView == .lights ? "LIGHTS": currentView == .sensors ? "SENSORS" : "GROUPS")
                     .font(Font.custom("Okuda Bold", size: 55))
                     .padding(.bottom,2)
-                    .foregroundColor(Color(hex:0xCCE0F7))
+                    .foregroundColor(borderColor)
                     .layoutPriority(1)
+                    .kerning(1.4)
                 
                 Rectangle(radius: 40)
-                    .fill(Color(hex:0xCCE0F7))
+                    .fill(borderColor)
                     .frame(width:40, height:40)
-                    .padding(0)
+                    .padding(-3)
             }
             .frame(maxHeight:40)
             
             switch currentView {
                 case .lights:
-                    LightsView().listRowSpacing(-10)
+                    LightsView(borderColor: borderColor).listRowSpacing(-10)
                 case .sensors:
-                    SensorsView().listRowSpacing(-10)
+                    SensorsView(borderColor: borderColor).listRowSpacing(-10)
                 case .groups:
-                    GroupsView().listRowSpacing(-10)
+                    GroupsView(borderColor: borderColor).listRowSpacing(-10)
             }
 
             // Footer
-            HStack (spacing:2){
+            HStack (spacing:6) {
                 BottomLeftRoundedRectangle(radius: 36)
-                    .fill(Color(hex:0xCCE0F7))
+                    .fill(borderColor)
                     .frame(maxHeight: 36)
                 Rectangle()
-                    .fill(Color(hex:0xCCE0F7))
+                    .fill(Color(hex:0xED884C))
                     .frame(height:36)
                     .overlay(alignment: .trailing){
                         Text("LIGHTS")
-                            .font(Font.custom("Okuda Bold", size: 30))
+                            .font(Font.custom("Okuda Bold", size: 26))
                             .foregroundColor(.black)
                             .padding(.bottom, -4)
                             .padding(.trailing, 2)
@@ -72,11 +88,11 @@ struct BridgeView: View {
                     }
                 
                 Rectangle()
-                    .fill(Color(hex:0xCCE0F7))
+                    .fill(Color(hex:0x3399ff))
                     .frame(height:36)
                     .overlay(alignment: .trailing){
                         Text("GROUPS")
-                            .font(Font.custom("Okuda Bold", size: 30))
+                            .font(Font.custom("Okuda Bold", size: 26))
                             .foregroundColor(.black)
                             .padding(.bottom, -4)
                             .padding(.trailing, 2)
@@ -91,11 +107,11 @@ struct BridgeView: View {
                     }
                 
                 Rectangle()
-                    .fill(Color(hex:0xCCE0F7))
+                    .fill(Color(hex:0x9c9cff))
                     .frame(height:36)
                     .overlay(alignment: .trailing){
                         Text("SENSORS")
-                            .font(Font.custom("Okuda Bold", size: 30))
+                            .font(Font.custom("Okuda Bold", size: 26))
                             .foregroundColor(.black)
                             .padding(.bottom, -4)
                             .padding(.trailing, 2)
@@ -110,8 +126,8 @@ struct BridgeView: View {
                     }
                 
                 Rectangle(radius: 40)
-                    .fill(Color(hex:0xCCE0F7))
-                    .frame(width:10, height:36)
+                    .fill(borderColor)
+                    .frame(width:20, height:36)
             }
         }
         .padding()

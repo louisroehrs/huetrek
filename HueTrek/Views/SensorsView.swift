@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SensorsView: View {
     @EnvironmentObject private var hueManager: HueManager
+    let borderColor: Color
     
     var body: some View {
         
@@ -32,7 +33,7 @@ struct SensorsView: View {
             // Left border
             Rectangle()
                 .frame(width: 12)
-                .foregroundColor(Color(hex: 0xCCE0F7))
+                .foregroundColor(borderColor)
                 .padding(.vertical, 0),
             alignment: .leading
         )

@@ -8,6 +8,7 @@ import SwiftUI
 
 struct LightsView: View {
     @EnvironmentObject var hueManager: HueManager
+    let borderColor: Color
     
     var body: some View {
         
@@ -34,9 +35,10 @@ struct LightsView: View {
             // Left border
             Rectangle()
                 .frame(width: 12)
-                .foregroundColor(Color(hex: 0xCCE0F7))
+                .foregroundColor(borderColor)
                 .padding(.vertical, 0),
             alignment: .leading
+
         )
 
     }
@@ -48,13 +50,13 @@ struct LightRowView: View {
     
     var body: some View {
         VStack {
-            HStack(spacing: 1) {
+            HStack(spacing: 5) {
                 
                 Text(light.name)
                     .textCase(.uppercase)
                     .offset(x:10,y:5)
                     .font(Font.custom("Okuda", size: 30))
-                    .frame(width: UIScreen.main.bounds.width - 180, height:40, alignment: .leading)
+                    .frame(width: UIScreen.main.bounds.width - 200, height:40, alignment: .leading)
                     .background(Color.blue)
                     .onTapGesture {
                         hueManager.toggleLight(light)
@@ -68,7 +70,6 @@ struct LightRowView: View {
                     .onTapGesture {
                         hueManager.toggleLight(light)
                     }
-                
                 
                 Image(systemName: "paintpalette.fill")
                     .imageScale(.large)
@@ -95,7 +96,7 @@ struct LightRowView: View {
                 
                 RightRoundedRectangle()
                     .fill(Color(.blue))
-                    .frame(width:40,height:40)
+                    .frame(width:50,height:40)
                 
             }
             if light.isColorPickerVisible {
@@ -108,12 +109,11 @@ struct LightRowView: View {
                 RightRoundedRectangle()
                     .fill(Color(.blue))
                     .frame(width:.infinity, height:40)
-                
             }
         }
         .padding(.bottom, 0)
         .padding(.top,0)
-        .padding(.leading, 8)
+        .padding(.leading, 20)
         .opacity(light.state.reachable ? 1 : 0.5)
         .background(Color.black)
         .foregroundColor(Color.black)

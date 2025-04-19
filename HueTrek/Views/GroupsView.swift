@@ -9,6 +9,7 @@ import SwiftUI
 
 struct GroupsView: View {
     @EnvironmentObject private var hueManager: HueManager
+    let borderColor: Color
     
     var body: some View {
         VStack {
@@ -34,7 +35,7 @@ struct GroupsView: View {
             // Left border
             Rectangle()
                 .frame(width: 12)
-                .foregroundColor(Color(hex: 0xCCE0F7))
+                .foregroundColor(borderColor)
                 .padding(.vertical, 0),
             alignment: .leading
         )
@@ -130,7 +131,7 @@ struct GroupRowView: View {
 
 struct GroupsView_Previews: PreviewProvider {
     static var previews: some View {
-        GroupsView()
+        GroupsView(borderColor: Color.red)
             .environmentObject(HueManager())
     }
 }

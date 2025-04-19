@@ -724,6 +724,22 @@ class HueManager: ObservableObject {
     }
 }
 
+// Add this extension to HueManager
+extension HueManager {
+    static var preview: HueManager {
+        let manager = HueManager()
+        manager.bridgeConfigurations = [
+            BridgeConfiguration(name: "Bridge 1 - Living Room", bridgeIP: "192.168.1.100", apiKey: "preview1"),
+            BridgeConfiguration(name: "Bridge 2 - Bedroom", bridgeIP: "192.168.1.101", apiKey: "preview2"),
+            BridgeConfiguration(name: "Bridge 3 - Office", bridgeIP: "192.168.1.102", apiKey: "preview3"),
+            BridgeConfiguration(name: "Bridge 4 - Kitchen", bridgeIP: "192.168.1.103", apiKey: "preview4")
+        ]
+        manager.currentBridgeConfig = manager.bridgeConfigurations.first
+        return manager
+    }
+}
+
+
 // Response models
 private struct BridgeDiscovery: Codable {
     let id: String

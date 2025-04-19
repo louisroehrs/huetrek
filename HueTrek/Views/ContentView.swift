@@ -161,7 +161,7 @@ struct ContentView: View {
                 ToolbarItem(placement: .principal) {
                     HStack {
                         BottomLeftRoundedRectangle(radius:30)
-                            .fill(Color.mint)
+                            .fill(Color(hex:0xFF9C00))
                             .frame(width:50,height:30)
                         if hueManager.bridgeIP == nil {
                             Text("SCANNING")
@@ -190,6 +190,7 @@ struct ContentView: View {
                                 .padding(.bottom, 1)
                             } else {
                                 Text(hueManager.currentBridgeConfig?.name ?? "BRIDGE")
+                                    .textCase(.uppercase)
                                     .font(Font.custom("Okuda Bold", size: 40))
                                     .foregroundStyle(Color.blue)
                                     .layoutPriority(1)
@@ -201,9 +202,8 @@ struct ContentView: View {
                             }
                         }
                         Rectangle()
-                            .fill(Color.mint)
+                            .fill(Color(hex:0xFF9C00))
                             .frame(maxHeight:30)
-                            .layoutPriority(0)
                     }
                 }
             }
@@ -214,83 +214,6 @@ struct ContentView: View {
     }
 }
 
-struct BridgeSelectorView: View {
-    @Environment(\.presentationMode) var presentationMode
-    @EnvironmentObject private var hueManager: HueManager
-    @State private var isEditingName = false
-    @State private var editedName = ""
-    @State private var editingBridgeId: UUID?
-    @FocusState private var isFocused: Bool
-    
-    var body: some View {
-        NavigationView {
-            List {
-                ForEach(hueManager.bridgeConfigurations) { config in
-                    HStack {
-                        if isEditingName && editingBridgeId == config.id {
-                            TextField("Bridge Name", text: $editedName, onCommit: {
-                                if editingBridgeId == hueManager.currentBridgeConfig?.id {
-                                    hueManager.updateBridgeName(editedName)
-                                }
-                                isEditingName = false
-                                editingBridgeId = nil
-                            })
-                            .font(Font.custom("Okuda", size: 24))
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .foregroundColor(.blue)
-                            .focused($isFocused)  // Add focus binding
-                            .onAppear {
-                                isFocused = true  // Automatically focus when TextField appears
-                            } 
-                        } else {
-                            Text(config.name)
-                                .font(Font.custom("Okuda", size: 24))
-                                .foregroundColor(.blue)
-                        }
-                        
-                        Spacer()
-                        
-                        if config.id == hueManager.currentBridgeConfig?.id {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.blue)
-                        }
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        hueManager.playSound(sound: "colorpickerslidedown")
-                        hueManager.switchToBridge(withId: config.id)
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                    .contextMenu {
-                        Button("Rename") {
-                            editingBridgeId = config.id
-                            editedName = config.name
-                            isEditingName = true
-                        }
-                        Button("Delete", role: .destructive) {
-                            hueManager.removeBridge(withId: config.id)
-                        }
-                    }
-                }
-            }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden) // Hide default list background
-            .background(Color.black) // Set the list background to black
-            .navigationTitle("Select Bridge")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        hueManager.playSound(sound: "colorpickerslidedown")
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                }
-            }
-        }
-        .background(Color.black.edgesIgnoringSafeArea(.all)) // Set th<e NavigationView background
-        .preferredColorScheme(.dark) // Optional: ensure dark mode for the sheet
-    }
-}
 
 
 #Preview {
