@@ -158,17 +158,18 @@ struct ContentView: View {
             .foregroundStyle(Color.white)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    HStack {
+                    HStack(spacing:4) {
                         BottomLeftRoundedRectangle(radius:30)
                             .fill(Color(hex:0xFF9C00))
                             .frame(width:50,height:30)
+
                         if hueManager.bridgeIP == nil {
                             Text("SCANNING")
                                 .layoutPriority(1)
                                 .font(Font.custom("Okuda Bold", size: 40))
                                 .foregroundStyle(Color.blue)
                                 .padding(.bottom, 1)
-                        } else if hueManager.apiKey == nil {
+                        } else if hueManager.apiKey == nil || hueManager.isAddingNewBridge {
                             Text("PAIRING")
                                 .font(Font.custom("Okuda Bold", size: 40))
                                 .foregroundStyle(Color.blue)
@@ -203,6 +204,7 @@ struct ContentView: View {
                         Rectangle()
                             .fill(Color(hex:0xFF9C00))
                             .frame(minWidth:40)
+                            .padding(0)
                     }
                     .frame(maxHeight:30)
                 }

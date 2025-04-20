@@ -11,8 +11,8 @@ struct DiscoveryView: View {
     @EnvironmentObject var hueManager: HueManager
 
     var body: some View {
-        VStack {
-            HStack {// Header
+        VStack(spacing:4) {
+            HStack(spacing:4) {// Header
                 TopLeftRoundedRectangle(radius: 40)
                     .fill(Color(hex:0xCCE0F7))
                     .frame(maxHeight: 40)
@@ -56,7 +56,7 @@ struct DiscoveryView: View {
                                 .cornerRadius(20)
                                 .padding(0)
                         }
-                        HStack(spacing:-5) {
+                        HStack(spacing:6) {
                             Button(action:hueManager.discoverBridge) {
                                 Text("SEARCH FOR BRIDGE")
                                     .font(Font.custom("Okuda Bold", size: 30))
@@ -65,7 +65,7 @@ struct DiscoveryView: View {
                                     .frame(maxWidth: .infinity, maxHeight:60)
                             }
                             .background(Color.blue)
-                            .padding()
+                            .padding(0)
                             .frame(maxWidth: .infinity)
                             
                             RightRoundedRectangle(radius:30)
@@ -92,23 +92,25 @@ struct DiscoveryView: View {
             .background(Color(hex:0xCCE0F7))
         
             // Footer
-            HStack {
+            HStack(spacing:4) {
                 BottomLeftRoundedRectangle(radius: 36)
                     .fill(Color(hex:0xCCE0F7))
                     .frame(maxHeight: 36)
                     .layoutPriority(1)
                 Text("ABORT")
                     .font(Font.custom("Okuda", size: 50))
-                    .foregroundColor(.blue)
+                    .foregroundColor(.yellow)
                     .frame(height: 40).padding(.bottom, 2)
                     .layoutPriority(1)
                     .onTapGesture {
+                        hueManager.playSound(sound: "input_failed_clean")
                         hueManager.isDiscovering = false
                         hueManager.isAddingNewBridge = false
                     }
                 
                 Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:40, height:36)
             }
+            .frame(maxHeight: 36)
         }
         .padding()
         .background(Color.black.edgesIgnoringSafeArea(.all))

@@ -38,7 +38,6 @@ struct LightsView: View {
                 .foregroundColor(borderColor)
                 .padding(.vertical, 0),
             alignment: .leading
-
         )
 
     }

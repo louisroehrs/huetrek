@@ -23,8 +23,8 @@ struct BridgeSelectorView: View {
     
     var body: some View {
         NavigationView {
-            VStack (spacing: 4) {
-                HStack(spacing:4) {// Header
+            VStack (spacing: 6) {
+                HStack(spacing:6) {// Header
                     TopLeftRoundedRectangle(radius: 40)
                         .fill(Color(hex:0xF5ED00))
                         .layoutPriority(1)
@@ -133,15 +133,15 @@ struct BridgeSelectorView: View {
                     Rectangle()
                         .frame(width: 12)
                         .foregroundColor(Color(hex:0xFF9C00))
-                        .padding(.vertical, 0),
+                        .padding(.bottom, -10),
                     alignment: .leading
                 )
 
-
-                HStack {
+                HStack(spacing: 4){
                     BottomLeftRoundedRectangle(radius:30)
                         .fill(Color(hex:0xFF9C00))
                         .frame(width:50,height:30)
+
                     Text(hueManager.currentBridgeConfig?.name ?? "BRIDGE")
                         .font(Font.custom("Okuda Bold", size: 40))
                         .textCase(.uppercase)
@@ -161,14 +161,11 @@ struct BridgeSelectorView: View {
                                 .padding(.trailing, 1)
                                 
                         }
-
-                        
                     RightRoundedRectangle(radius: 15)
                         .fill(Color(hex:0xFF9C00))
-                        .frame(width:.infinity, height:30)
+                        .frame(width:40,height:30)
 
                 }
-                .padding(0)
                 .background(Color.black)
                 .listStyle(.plain)
                 .onTapGesture {

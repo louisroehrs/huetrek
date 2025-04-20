@@ -183,6 +183,7 @@ class HueManager: ObservableObject {
     }
     
     func discoverBridge() {
+        playSound(sound: "tos_bridgescanner")
         isDiscovering = true
         isAddingNewBridge = true
         noDiscoveryAttempts = false
