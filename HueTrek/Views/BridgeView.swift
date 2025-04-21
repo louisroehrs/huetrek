@@ -30,8 +30,6 @@ struct BridgeView: View {
                 return Color(hex:0x87eeff)
             }
         }
-            
-                
         
         VStack {
             HStack(spacing:3) {// Header
@@ -80,6 +78,7 @@ struct BridgeView: View {
                             .layoutPriority(1)
                             .onTapGesture {
                                 hueManager.playSound(sound: "panelswitch")
+                                hueManager.fetchLights()
                                 withAnimation(Animation.easeInOut(duration: 0.5),
                                               { currentView = .lights}
                                 )
@@ -99,6 +98,7 @@ struct BridgeView: View {
                             .layoutPriority(1)
                             .onTapGesture {
                                 hueManager.playSound(sound: "panelswitch")
+                                hueManager.fetchGroups()
                                 withAnimation(Animation.easeInOut(duration: 0.5),
                                               { currentView = .groups}
                                 )
@@ -118,6 +118,7 @@ struct BridgeView: View {
                             .layoutPriority(1)
                             .onTapGesture {
                                 hueManager.playSound(sound: "panelswitch")
+                                hueManager.fetchSensors()
                                 withAnimation(Animation.easeInOut(duration: 0.5),
                                               { currentView = .sensors}
                                 )
@@ -132,7 +133,6 @@ struct BridgeView: View {
         }
         .padding()
         .background(Color.black.edgesIgnoringSafeArea(.all))
-        
     }
 }
 

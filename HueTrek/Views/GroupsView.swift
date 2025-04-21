@@ -84,10 +84,18 @@ struct GroupRowView: View {
             HStack {
                 Image(systemName: "sun.min")
                     .foregroundColor(.gray)
-                Slider(value: Binding(
-                    get: { Double(group.action.bri) },
-                    set: { hueManager.setBrightness(Int($0), for: group) }
-                ), in: 0...254)
+                GroupSliderView(sliderValue: Binding(
+                    get: {
+                        Double(group.action.bri)
+                    },
+                    set: { sliderValue in
+                        var myGroup = hueManager.groups.first(where: {$0.id == group.id} )
+                        var myGroupIndex = hueManager.groups.firstIndex(where: {$0.id == group.id} )
+                        myGroup!.action.bri = Int(sliderValue)
+                        hueManager.groups[myGroupIndex!] = myGroup!
+                    }
+                    ),
+                    group: group)
                 Image(systemName: "sun.max")
                     .foregroundColor(.gray)
             }

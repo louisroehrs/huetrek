@@ -59,7 +59,7 @@ class HueManager: ObservableObject {
     @Published var newBridgeAdded = false
     
     @Published var sensors: [Sensor] = []
-    
+        
     struct Group: Identifiable, Codable {
         let id: String
         var name: String
@@ -329,9 +329,6 @@ class HueManager: ObservableObject {
 
         // Send the update to the Hue bridge
         sendColorUpdateToBridge(light: light, hue: Int(hue * 65535), saturation: Int(saturation * 255), brightness: Int(brightness * 254))
-
-        // Print the updated color
-        print("Light \(light.name) changed to color: \(color)")
     }
     
     private func sendColorUpdateToBridge(light: Light, hue: Int, saturation: Int, brightness: Int) {
@@ -410,15 +407,15 @@ class HueManager: ObservableObject {
                     print(self?.error ?? "Unknown error")
                     return
                 }
-
+/*
                 if let jsonString = String(data: data, encoding: .utf8) {
                     print("JSON Response: \(jsonString)")
                 } else {
                     print("Failed to convert data to string")
                 }
+ */
                 
                 do {
-                    print(" do do do")
                     if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
                         self?.lights = json.compactMap { (key, value) -> Light? in
                             guard let lightData = value as?[String: Any],
@@ -452,53 +449,7 @@ class HueManager: ObservableObject {
             }
         }.resume()
     }
-              
-    func fetchLightsMock() {
-        print("mock")
-        let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/fullconfig.json")!
-        // http://localhost:8000/fullconfig.json")!
-        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-            DispatchQueue.main.async {
-                print("dispatch")
-                if let error = error {
-                    self?.error = error.localizedDescription
-                    print(self?.error ?? "Unknown error")
-                    return
-                }
-                
-                guard let data = data else {
-                    self?.error = "No data received"
-                    print(self?.error ?? "Unknown error")
-                    return
-                }
-                
-                do {
-                    if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any],
-                       let lights = json["lights"] as? [String: Any] {
-                        self?.lights = lights.map { (key, value) in
-                            // probably a more straightforward way to assign Light.State but this works
-                            let name = (value as? [String: Any])?["name"] as? String ?? ""
-                            let hue = ((value as? [String: Any])?["state"] as? [String: Any])?["hue"] as? Int ?? 0
-                            let on = ((value as? [String: Any])?["state"] as? [String: Any])?["on"] as? Bool ?? false
-                            let bri = ((value as? [String: Any])?["state"] as? [String: Any])?["bri"] as? Int ?? 0
-                            let sat = ((value as? [String: Any])?["state"] as? [String: Any])?["sat"] as? Int ?? 0
-                            let state =  HueManager.Light.State(on: on, bri:bri, hue:hue, sat:sat, reachable: true)
-                            // fix reachable...
 
-                            var thisLight = Light(id: key, name: name, state: state)
-                            thisLight.selectedColor = self?.hueLightToSwiftColor(light: thisLight)
-                            
-                            return thisLight
-                        }
-                        self?.lights.sort { $0.name < $1.name }
-                    }
-                } catch {
-                    self?.error = error.localizedDescription
-                    print(self?.error ?? "Json parsing error")
-                }
-            }
-        }.resume()
-    }
  
     func playSound(sound: String) {
         guard let url = Bundle.main.url(forResource: sound, withExtension: "mp3") else {
@@ -648,8 +599,8 @@ class HueManager: ObservableObject {
                                   let name = groupData["name"] as? String,
                                   let lights = groupData["lights"] as? [String],
                                   let type = groupData["type"] as? String,
-                                  let stateData = groupData["state"] as? [String: Any],
-                                  let actionData = groupData["action"] as? [String: Any],
+                                  var stateData = groupData["state"] as? [String: Any],
+                                  var actionData = groupData["action"] as? [String: Any],
                                   let className = groupData["class"] as? String else {
                                 return nil
                             }
@@ -713,11 +664,21 @@ class HueManager: ObservableObject {
         request.httpMethod = "PUT"
         request.httpBody = try? JSONEncoder().encode(["bri": brightness])
         
+        var myGroup = self.groups.first(where: {$0.id == group.id})
+        var myGroupIndex = self.groups.firstIndex(where: {$0.id == group.id})
+
+        myGroup!.action.bri = brightness
+        
+        self.groups[myGroupIndex!] = myGroup!
+        
+        
         URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
             DispatchQueue.main.async {
                 self?.fetchGroups()
             }
         }.resume()
+         
+         
     }
     
     func updateGroupColor(_ group: Group, color: Color) {
