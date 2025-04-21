@@ -10,16 +10,7 @@ import SwiftUI
 struct BridgeSelectorView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject private var hueManager: HueManager
-    @State private var isEditingName = false
-    @State private var editedName = ""
-    @State private var editingBridgeId: UUID?
-    @FocusState private var isFocused: Bool
-    
-    func addBridgeTapped() {
-        hueManager.discoverBridge()
-        hueManager.playSound(sound: "colorpickerslidedown")
-        hueManager.isAddingNewBridge = true
-    }
+
     
     var body: some View {
         NavigationView {
@@ -58,75 +49,12 @@ struct BridgeSelectorView: View {
                 .frame(maxHeight:40)
                 List {
                     ForEach(hueManager.bridgeConfigurations) { config in
-                        HStack(spacing:8) {
-
-                            Rectangle()
-                                .fill(Color(hex:0x6888FF))
-                                .frame(maxHeight:40)
-                                .overlay(alignment: .leading){
-                                    
-                                    if isEditingName && editingBridgeId == config.id {
-                                        TextField("Bridge Name", text: $editedName, onCommit: {
-                                            if editingBridgeId == hueManager.currentBridgeConfig?.id {
-                                                hueManager.updateBridgeName(editedName)
-                                            }
-                                            isEditingName = false
-                                            editingBridgeId = nil
-                                        })
-                                        .textCase(.uppercase)
-                                        .font(Font.custom("Okuda", size: 24))
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                                        .foregroundColor(.blue)
-                                        .focused($isFocused)  // Add focus binding
-                                        .onAppear {
-                                            isFocused = true  // Automatically focus when TextField appears
-                                        }
-                                    } else {
-                                        Text(config.name)
-                                            .textCase(.uppercase)
-                                            .font(Font.custom("Okuda", size: 24))
-                                            .foregroundColor(.black)
-                                            .padding(.bottom, -10)
-                                            .padding(.leading, 8)
-                                            .layoutPriority(1)
-                                    }
-                                }
-                                .background(Color.black)
-                            
-                            if config.id == hueManager.currentBridgeConfig?.id {
-                                RightRoundedRectangle()
-                                    .fill(Color(hex:0x009900))
-                                    .frame(width:40,height:40)
-                                    .padding(0)
-                            } else {
-                                RightRoundedRectangle()
-                                    .fill(Color(.black))
-                                    .frame(width:40,height:40)
-                                    .padding(0)
-                            }
-                        }
-                        .background(Color.black)
-                        .onTapGesture {
-                            hueManager.playSound(sound: "colorpickerslidedown")
-                            hueManager.switchToBridge(withId: config.id)
-                            presentationMode.wrappedValue.dismiss()
-                        }
-                        .padding(.leading, 20)
-                        .contextMenu {
-                            Button("Rename") {
-                                editingBridgeId = config.id
-                                editedName = config.name
-                                isEditingName = true
-                            }
-                            Button("Delete", role: .destructive) {
-                                hueManager.removeBridge(withId: config.id)
-                            }
-                        }
+                        BridgeRowItem(config: config)
                     }
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden) // Hide default list background
-                .background(Color.black) // Set the list background to black
+                .background(Color.black)
                 .navigationBarTitleDisplayMode(.inline)
                 .overlay(
                     // Left border
@@ -141,7 +69,7 @@ struct BridgeSelectorView: View {
                     BottomLeftRoundedRectangle(radius:30)
                         .fill(Color(hex:0xFF9C00))
                         .frame(width:50,height:30)
-
+                    
                     Text(hueManager.currentBridgeConfig?.name ?? "BRIDGE")
                         .font(Font.custom("Okuda Bold", size: 40))
                         .textCase(.uppercase)
@@ -159,27 +87,103 @@ struct BridgeSelectorView: View {
                                 .foregroundColor(.black)
                                 .padding(.bottom, -4)
                                 .padding(.trailing, 1)
-                                
                         }
+                        .onTapGesture {
+                            hueManager.playSound(sound: "add_bridge")
+                            hueManager.addBridgeTapped()
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    
                     RightRoundedRectangle(radius: 15)
                         .fill(Color(hex:0xFF9C00))
                         .frame(width:40,height:30)
-
-                }
-                .background(Color.black)
-                .listStyle(.plain)
-                .onTapGesture {
-                    addBridgeTapped()
-                    presentationMode.wrappedValue.dismiss()
                 }
             }
-            .listStyle(.plain)
+            .background(Color.black.edgesIgnoringSafeArea(.all)) // Set the NavigationView background
         }
-        .background(Color.black.edgesIgnoringSafeArea(.all)) // Set the NavigationView background
-        .preferredColorScheme(.dark) // Optional: ensure dark mode for the sheet
+        .preferredColorScheme(.dark)
     }
+
 }
 
+struct BridgeRowItem: View {
+    @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var hueManager: HueManager
+    @State private var isEditingName = false
+    @State private var editedName = ""
+    @State private var editingBridgeId: UUID?
+    @FocusState private var isFocused: Bool
+    
+    let config: BridgeConfiguration
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Rectangle()
+                .fill(Color(hex:0x6888FF))
+                .frame(maxHeight:40)
+                .overlay(alignment: .leading){
+                    
+                    if isEditingName && editingBridgeId == config.id {
+                        TextField("Bridge Name", text: $editedName, onCommit: {
+                            if editingBridgeId == hueManager.currentBridgeConfig?.id {
+                                hueManager.updateBridgeName(editedName)
+                            }
+                            isEditingName = false
+                            editingBridgeId = nil
+                        })
+                        .textCase(.uppercase)
+                        .font(Font.custom("Okuda", size: 24))
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .foregroundColor(.blue)
+                        .focused($isFocused)  // Add focus binding
+                        .onAppear {
+                            isFocused = true  // Automatically focus when TextField appears
+                        }
+                    } else {
+                        Text(config.name)
+                            .textCase(.uppercase)
+                            .font(Font.custom("Okuda", size: 24))
+                            .foregroundColor(.black)
+                            .padding(.bottom, -10)
+                            .padding(.leading, 8)
+                            .layoutPriority(1)
+                    }
+                }
+                .background(Color.black)
+            
+            if config.id == hueManager.currentBridgeConfig?.id {
+                RightRoundedRectangle()
+                    .fill(Color(hex:0x009900))
+                    .frame(width:40,height:40)
+                    .padding(0)
+            } else {
+                RightRoundedRectangle()
+                    .fill(Color(.black))
+                    .frame(width:40,height:40)
+                    .padding(0)
+            }
+        }
+        .padding(.leading, 20)
+        .contextMenu {
+            Button("Rename") {
+                hueManager.playSound(sound: "rename")
+                editingBridgeId = config.id
+                editedName = config.name
+                isEditingName = true
+            }
+            Button("Delete", role: .destructive) {
+                hueManager.playSound(sound: "denybeep4")
+                hueManager.removeBridge(withId: config.id)
+            }
+        }
+        .onTapGesture {
+            hueManager.playSound(sound: "colorpickerslidedown")
+            hueManager.switchToBridge(withId: config.id)
+            presentationMode.wrappedValue.dismiss()
+        }
+    }
+
+}
 
 #Preview {
     BridgeSelectorView()

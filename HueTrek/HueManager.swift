@@ -154,6 +154,12 @@ class HueManager: ObservableObject {
         }
     }
     
+    func addBridgeTapped() {
+        self.discoverBridge()
+        self.playSound(sound: "colorpickerslidedown")
+        self.isAddingNewBridge = true
+    }
+    
     func addNewBridgeConfiguration(name: String) {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         let newConfig = BridgeConfiguration(name: name, bridgeIP: bridgeIP, apiKey: apiKey)
