@@ -32,51 +32,72 @@ struct PairingView: View {
             VStack {
                 VStack(spacing: 50) {
                     HStack(spacing:8) {
-                        
-                        Text("Press the link button on your Hue Bridge")
+                        Text(hueManager.newBridgeAdded ? "New Bridge Added" : "Press the link button on your Hue Bridge")
                             .font(Font.custom("Okuda Bold", size: 35))
                             .padding(10)
                             .foregroundColor(.green)
                             .multilineTextAlignment(.center)
                             .background(.clear)
                             .kerning(1.2)
+                            .lineLimit(nil) // unlimited lines
+                            .fixedSize(horizontal: false, vertical: true)
                             .textCase(.uppercase)
                             .frame(maxWidth:.infinity, maxHeight:100)
                     }
-                    HStack() {
-                        VStack() {
-                            GlowingImageView()
-                        }
-                        .padding(30)
-                        .background(Color(hex:0xd0d0d0))
-                        .cornerRadius(20)
-                        .frame(maxWidth: .infinity, maxHeight:250)
-                        .padding(40)
+                    
+                    VStack() {
+                        GlowingImageView()
                     }
+                    .padding(30)
+                    .background(Color(hex:0xd0d0d0))
+                    .cornerRadius(20)
                     .frame(maxWidth: .infinity, maxHeight:250)
+                    .padding(40)
+                    
+                    
                     
                     HStack(spacing: 6) {
-                        Button(action: {
-                            hueManager.playSound(sound: "processing3")
-                            hueManager.pairWithBridge {
-                                // Handle completion if needed
-                            }
-                        }) {
-                            Text("START PAIRING")
-                                .font(Font.custom("Okuda Bold", size: 30))
-                                .foregroundColor(.white)
-                                .padding()
-                                .kerning(1.4)
-                                .frame(maxWidth: .infinity, maxHeight:60)
+                        if hueManager.newBridgeAdded {
+                            Rectangle()
+                                .fill(Color(hex:0x9c9cff))
+                                .frame(height:60)
+                                .onTapGesture {
+                                    hueManager.playSound(sound: "continue");
+                                    hueManager.isAddingNewBridge = false;
+                                    hueManager.newBridgeAdded = false;
+                                }
+                                .overlay (alignment: .bottomTrailing){
+                                    Text("CONTINUE")
+                                        .font(Font.custom("Okuda Bold", size: 26))
+                                        .foregroundColor(.black)
+                                        .layoutPriority(1)
+                                }
                         }
-                        .background(Color.blue)
-                        .frame(maxWidth: .infinity)
+                        
+                        else {
+                            Rectangle()
+                                .fill(Color(hex:0x9c9cff))
+                                .frame(height:60)
+                                .onTapGesture {
+                                    hueManager.playSound(sound: "processing3")
+                                    hueManager.pairWithBridge {
+                                        hueManager.newBridgeAdded = true
+                                    }
+                                }
+                                .overlay (alignment: .bottomTrailing){
+                                    Text("START PAIRING")
+                                        .font(Font.custom("Okuda Bold", size: 26))
+                                        .foregroundColor(.black)
+                                        .layoutPriority(1)
+                                }
+                        }
                         
                         RightRoundedRectangle(radius:30)
                             .fill(Color.blue)
                             .frame(width:30,height:60)
                             .padding(0)
                     }
+                    .frame(maxHeight:60)
                 }
                 .padding()
                 .background(.black)

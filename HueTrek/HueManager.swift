@@ -56,6 +56,7 @@ class HueManager: ObservableObject {
     @Published var noDiscoveryAttempts = true
     @Published var error: String?
     @Published var isAddingNewBridge = false
+    @Published var newBridgeAdded = false
     
     @Published var sensors: [Sensor] = []
     
@@ -180,6 +181,9 @@ class HueManager: ObservableObject {
         if currentBridgeConfig?.id == id {
             currentBridgeConfig = bridgeConfigurations.first
         }
+        if bridgeConfigurations.isEmpty {
+            currentBridgeConfig = nil
+        }
     }
     
     func discoverBridge() {
@@ -198,9 +202,11 @@ class HueManager: ObservableObject {
                    let bridge = bridges.first {
                    self?.bridgeIP = bridge.internalipaddress
                    self?.isDiscovering = false
+                   self?.stopSound()
                } else {
+                   print("db: fallback")
                     // Fall back to UPnP discovery
-                    self?.discoverBridgeUPnP()
+                   self?.discoverBridgeUPnP()
                }
             }
         }.resume()
@@ -210,12 +216,14 @@ class HueManager: ObservableObject {
         let ssdpAddress = "239.255.255.250"
         let ssdpPort: UInt16 = 1900
         
+        print("UPnP")
         guard let udpSocket = try? NWConnection(
             to: NWEndpoint.hostPort(host: .init(ssdpAddress), port: .init(integerLiteral: ssdpPort)),
             using: .udp
-        ) else {
+        )
+        else {
             isDiscovering = false
-            error = "Failed to create UDP socket"
+            print("Failed to create UDP socket")
             return
         }
         
@@ -232,12 +240,15 @@ class HueManager: ObservableObject {
             switch state {
             case .ready:
                 udpSocket.send(content: searchMessage.data(using: .utf8), completion: .contentProcessed { _ in })
+                print("ready")
             case .failed(let error):
                 DispatchQueue.main.async {
                     self?.error = error.localizedDescription
                     self?.isDiscovering = false
+                    self?.stopSound()
                 }
             default:
+                print("default")
                 break
             }
         }
@@ -252,8 +263,10 @@ class HueManager: ObservableObject {
                    let url = URL(string: urlString),
                    let bridgeIP = url.host {
                     DispatchQueue.main.async {
+                        print("async")
                         self?.bridgeIP = bridgeIP
                         self?.isDiscovering = false
+                        self?.stopSound()
                     }
                 }
             }
@@ -279,6 +292,8 @@ class HueManager: ObservableObject {
                     // Add new bridge configuration with default name
                     self?.addNewBridgeConfiguration(name: "Bridge \(self?.bridgeConfigurations.count ?? 0 + 1)")
                     self?.fetchLights()
+                    self?.fetchGroups()
+                    self?.fetchSensors()
                     completion?()
                 } else if let error = error {
                     self?.error = error.localizedDescription
@@ -499,6 +514,10 @@ class HueManager: ObservableObject {
         }
     }
     
+    func stopSound() {
+        audioPlayer?.stop()
+    }
+    
     func toggleColorPicker(_ light: Light) {
         if let index = lights.firstIndex(where: { $0.id == light.id }) {
             lights[index].isColorPickerVisible.toggle()
@@ -608,9 +627,8 @@ class HueManager: ObservableObject {
     func fetchGroups() {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-        //let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
-        let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/groupsconfig.json")!
-        print("groupsfetch")
+        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
+        // let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/groupsconfig.json")!
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
@@ -673,7 +691,6 @@ class HueManager: ObservableObject {
     }
     
     func toggleGroup(_ group: Group) {
-        print("toggle group \(group.name)")
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
         let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups/\(group.id)/action")!

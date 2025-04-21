@@ -70,7 +70,10 @@ struct GroupRowView: View {
                 Spacer()
                 
                 // Power toggle button
-                Button(action: { hueManager.toggleGroup(group) }) {
+                Button(action: {
+                    hueManager.toggleGroup(group)
+                    hueManager.playSound(sound: "light" + (group.action.on ? "Off" : "On"))
+                }) {
                     Image(systemName: group.action.on ? "power.circle.fill" : "power.circle")
                         .font(.title)
                         .foregroundColor(group.action.on ? .green : .red)

@@ -37,6 +37,7 @@ struct DiscoveryView: View {
                             .font(Font.custom("Okuda", size: 20))
                             .foregroundColor(.blue)
                             .padding()
+                            .textCase(.uppercase)
                             .frame(maxWidth: .infinity)
                             .border(Color.blue)
                             .cornerRadius(20)
@@ -57,23 +58,25 @@ struct DiscoveryView: View {
                                 .padding(0)
                         }
                         HStack(spacing:6) {
-                            Button(action:hueManager.discoverBridge) {
-                                Text("SEARCH FOR BRIDGE")
-                                    .font(Font.custom("Okuda Bold", size: 30))
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .frame(maxWidth: .infinity, maxHeight:60)
-                            }
-                            .background(Color.blue)
-                            .padding(0)
-                            .frame(maxWidth: .infinity)
+                            Rectangle()
+                                .fill(Color(hex:0x9c9cff))
+                                .frame(height:60)
+                                .onTapGesture {
+                                    hueManager.discoverBridge()
+                                }
+                                .overlay (alignment: .bottomTrailing){
+                                    Text("SEARCH FOR BRIDGE")
+                                        .font(Font.custom("Okuda Bold", size: 26))
+                                        .foregroundColor(.black)
+                                        .layoutPriority(1)
+                                }
                             
                             RightRoundedRectangle(radius:30)
                                 .fill(Color.blue)
                                 .frame(width:30,height:60)
                                 .padding(0)
-                        }.padding(0)
-
+                        }
+                        .padding(0)
                     }
                        
                     Color.clear
