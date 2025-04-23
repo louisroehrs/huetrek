@@ -12,7 +12,7 @@ struct DiscoveryView: View {
 
     var body: some View {
         VStack(spacing:4) {
-            HStack(spacing:4) {// Header
+            HStack(spacing:4) {
                 TopLeftRoundedRectangle(radius: 40)
                     .fill(Color(hex:0xCCE0F7))
                     .frame(maxHeight: 40)
@@ -20,6 +20,7 @@ struct DiscoveryView: View {
                 
                 Text("BRIDGE")
                     .font(Font.custom("Okuda Bold", size: 55))
+                    .kerning(1.1)
                     .padding(.bottom,2)
                     .foregroundColor(Color(hex:0xCCE0F7))
                     .layoutPriority(1)
@@ -96,14 +97,17 @@ struct DiscoveryView: View {
         
             // Footer
             HStack(spacing:4) {
-                BottomLeftRoundedRectangle(radius: 36)
+                BottomLeftRoundedRectangle(radius: hueManager.ui.footerHeight)
                     .fill(Color(hex:0xCCE0F7))
-                    .frame(maxHeight: 36)
+                    .frame(maxHeight: hueManager.ui.footerHeight)
                     .layoutPriority(1)
+                
                 Text("ABORT")
-                    .font(Font.custom("Okuda", size: 50))
+                    .font(Font.custom("Okuda", size: hueManager.ui.footerLabelFontSize))
+                    .kerning(1.2)
                     .foregroundColor(.yellow)
-                    .frame(height: 40).padding(.bottom, 2)
+                    .frame(height: hueManager.ui.footerButtonFontSize)
+                    .padding(.bottom, 2)
                     .layoutPriority(1)
                     .onTapGesture {
                         hueManager.playSound(sound: "input_failed_clean")
@@ -111,9 +115,11 @@ struct DiscoveryView: View {
                         hueManager.isAddingNewBridge = false
                     }
                 
-                Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:40, height:36)
+                Rectangle(radius: hueManager.ui.footerHeight)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(width:40, height: hueManager.ui.footerHeight)
             }
-            .frame(maxHeight: 36)
+            .frame(maxHeight: hueManager.ui.footerHeight)
         }
         .padding()
         .background(Color.black.edgesIgnoringSafeArea(.all))

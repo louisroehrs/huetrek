@@ -24,6 +24,24 @@ struct BridgeConfiguration: Codable, Identifiable {
     }
 }
 
+struct UIConfig: Codable {
+    var footerHeight: CGFloat
+    var headerHeight: CGFloat
+    var footerButtonFontSize: CGFloat
+    var footerLabelFontSize: CGFloat
+    
+    init(footerHeight: CGFloat,
+         headerHeight: CGFloat,
+         footerButtonFontSize: CGFloat,
+         footerLabelFontSize: CGFloat
+    ) {
+        self.footerHeight = footerHeight
+        self.headerHeight = headerHeight
+        self.footerButtonFontSize = footerButtonFontSize
+        self.footerLabelFontSize = footerLabelFontSize
+    }
+}
+
 class HueManager: ObservableObject {
     @Published var bridgeConfigurations: [BridgeConfiguration] {
         didSet {
@@ -59,6 +77,13 @@ class HueManager: ObservableObject {
     @Published var newBridgeAdded = false
     
     @Published var sensors: [Sensor] = []
+    
+    @Published var ui:UIConfig = UIConfig(
+        footerHeight:36,
+        headerHeight:36,
+        footerButtonFontSize: 28,
+        footerLabelFontSize: 48
+    )
         
     struct Group: Identifiable, Codable {
         let id: String

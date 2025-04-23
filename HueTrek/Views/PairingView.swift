@@ -12,13 +12,14 @@ struct PairingView: View {
     
     var body: some View {
         VStack(spacing:4) {
-            HStack(spacing:4) {// Header
+            HStack(spacing:4) {
                 TopLeftRoundedRectangle(radius: 40)
                     .fill(Color(hex:0xCCE0F7))
                     .frame(maxHeight: 40)
                 
                 Text(hueManager.bridgeIP ?? "BRIDGE IP")
                     .font(Font.custom("Okuda Bold", size: 55))
+                    .kerning(1.1)
                     .padding(.bottom,2)
                     .foregroundColor(Color(hex:0xCCE0F7))
                     .layoutPriority(1)
@@ -39,7 +40,7 @@ struct PairingView: View {
                             .multilineTextAlignment(.center)
                             .background(.clear)
                             .kerning(1.2)
-                            .lineLimit(nil) // unlimited lines
+                            .lineLimit(nil) 
                             .fixedSize(horizontal: false, vertical: true)
                             .textCase(.uppercase)
                             .frame(maxWidth:.infinity, maxHeight:100)
@@ -53,8 +54,6 @@ struct PairingView: View {
                     .cornerRadius(20)
                     .frame(maxWidth: .infinity, maxHeight:250)
                     .padding(40)
-                    
-                    
                     
                     HStack(spacing: 6) {
                         if hueManager.newBridgeAdded {
@@ -86,7 +85,8 @@ struct PairingView: View {
                                 }
                                 .overlay (alignment: .bottomTrailing){
                                     Text("START PAIRING")
-                                        .font(Font.custom("Okuda Bold", size: 26))
+                                        .kerning(1.2)
+                                        .font(Font.custom("Okuda Bold", size: 30))
                                         .foregroundColor(.black)
                                         .layoutPriority(1)
                                 }
@@ -114,24 +114,33 @@ struct PairingView: View {
             
             // Footer
             HStack(spacing:4) {
-                BottomLeftRoundedRectangle(radius: 36)
+                BottomLeftRoundedRectangle(radius: hueManager.ui.footerHeight)
                     .fill(Color(hex:0xCCE0F7))
-                    .frame(maxHeight: 36)
+                    .frame(maxHeight: hueManager.ui.footerHeight)
                     .layoutPriority(1)
-                Text("ABORT")
-                    .font(Font.custom("Okuda", size: 50))
-                    .foregroundColor(.yellow)
-                    .frame(height: 40).padding(.bottom, 2)
+                
+                Rectangle()
+                    .fill(Color(.yellow))
+                    .frame(maxHeight: hueManager.ui.footerHeight)
                     .layoutPriority(1)
-                    .onTapGesture {
-                        hueManager.playSound(sound: "input_failed_clean")
-                        hueManager.isDiscovering = false
-                        hueManager.isAddingNewBridge = false
+                    .overlay (alignment: .bottomTrailing){
+                        Text("ABORT")
+                            .font(Font.custom("Okuda", size: hueManager.ui.footerButtonFontSize))
+                            .kerning(1.2)
+                            .foregroundColor(.black)
+                            .layoutPriority(1)
+                            .onTapGesture {
+                                hueManager.playSound(sound: "input_failed_clean")
+                                hueManager.isDiscovering = false
+                                hueManager.isAddingNewBridge = false
+                            }
                     }
                 
-                Rectangle(radius: 40).fill(Color(hex:0xCCE0F7)).frame(width:40, height:36)
+                Rectangle(radius: hueManager.ui.footerHeight)
+                    .fill(Color(hex:0xCCE0F7))
+                    .frame(width:40, height:hueManager.ui.footerHeight)
             }
-            .frame(maxHeight: 36)
+            .frame(maxHeight: hueManager.ui.footerHeight)
         }
         .padding()
         .background(Color.black)

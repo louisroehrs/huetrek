@@ -18,17 +18,15 @@ struct BridgeSelectorView: View {
                 HStack(spacing:6) {// Header
                     TopLeftRoundedRectangle(radius: 40)
                         .fill(Color(hex:0xF5ED00))
+                    
+                    Text( "BRIDGES")
+                        .textCase(.uppercase)
+                        .font(Font.custom("Okuda Bold", size: 50))
+                        .kerning(1.1)
+                        .padding(.bottom,2)
+                        .foregroundColor(Color(hex:0xF5ED00))
                         .layoutPriority(1)
-                        .overlay(alignment: .trailing) {
-                            Text( "Press and hold name to rename or delete")
-                                .textCase(.uppercase)
-                                .font(Font.custom("Okuda Bold", size: 25))
-                                .padding(.bottom,-10)
-                                .padding(.trailing, 3)
-                                .foregroundColor(Color.black)
-                                .layoutPriority(1)
-                                .kerning(1.3)
-                        }
+                    
                     
                     Rectangle(radius: 40)
                         .fill(Color(hex:0xFF9C00))
@@ -44,20 +42,29 @@ struct BridgeSelectorView: View {
                             hueManager.playSound(sound: "colorpickerslidedown")
                             presentationMode.wrappedValue.dismiss()
                         }
-                        
+                    
                 }
                 .frame(maxHeight:40)
-                List {
-                    ForEach(hueManager.bridgeConfigurations) { config in
-                        BridgeRowItem(config: config)
+                VStack {
+                    Text( "Press and hold name to rename or delete")
+                        .textCase(.uppercase)
+                        .font(Font.custom("Okuda Bold", size: 25))
+                        .kerning(1.3)
+                        .foregroundColor(Color(hex:0x6888FF))
+                        .layoutPriority(1)
+                        .padding()
+
+                    List {
+                        ForEach(hueManager.bridgeConfigurations) { config in
+                            BridgeRowItem(config: config)
+                        }
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden) // Hide default list background
+                    .background(Color.black)
+                    .navigationBarTitleDisplayMode(.inline)
                 }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden) // Hide default list background
-                .background(Color.black)
-                .navigationBarTitleDisplayMode(.inline)
                 .overlay(
-                    // Left border
                     Rectangle()
                         .frame(width: 12)
                         .foregroundColor(Color(hex:0xFF9C00))
@@ -66,12 +73,12 @@ struct BridgeSelectorView: View {
                 )
 
                 HStack(spacing: 4){
-                    BottomLeftRoundedRectangle(radius:30)
+                    BottomLeftRoundedRectangle(radius:hueManager.ui.footerHeight)
                         .fill(Color(hex:0xFF9C00))
-                        .frame(width:50,height:30)
+                        .frame(width:50,height:hueManager.ui.footerHeight)
                     
                     Text(hueManager.currentBridgeConfig?.name ?? "BRIDGE")
-                        .font(Font.custom("Okuda Bold", size: 40))
+                        .font(Font.custom("Okuda Bold", size: hueManager.ui.footerLabelFontSize))
                         .textCase(.uppercase)
                         .foregroundStyle(Color.blue)
                         .padding(.bottom, 1)
@@ -79,10 +86,10 @@ struct BridgeSelectorView: View {
                     
                     Rectangle()
                         .fill(Color(hex:0xFF9C00))
-                        .frame(maxHeight:30)
+                        .frame(maxHeight:hueManager.ui.footerHeight)
                         .overlay( alignment: .trailing) {
                             Text("ADD")
-                                .font(Font.custom("Okuda Bold", size: 30))
+                                .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))
                                 .textCase(.uppercase)
                                 .foregroundColor(.black)
                                 .padding(.bottom, -4)
@@ -94,9 +101,9 @@ struct BridgeSelectorView: View {
                             presentationMode.wrappedValue.dismiss()
                         }
                     
-                    RightRoundedRectangle(radius: 15)
+                    RightRoundedRectangle(radius: hueManager.ui.footerHeight/2)
                         .fill(Color(hex:0xFF9C00))
-                        .frame(width:40,height:30)
+                        .frame(width: 40, height: hueManager.ui.footerHeight)
                 }
             }
             .background(Color.black.edgesIgnoringSafeArea(.all)) // Set the NavigationView background
@@ -135,9 +142,9 @@ struct BridgeRowItem: View {
                         .font(Font.custom("Okuda", size: 24))
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .foregroundColor(.blue)
-                        .focused($isFocused)  // Add focus binding
+                        .focused($isFocused)
                         .onAppear {
-                            isFocused = true  // Automatically focus when TextField appears
+                            isFocused = true
                         }
                     } else {
                         Text(config.name)

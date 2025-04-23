@@ -63,15 +63,16 @@ struct BridgeView: View {
 
             // Footer
             HStack (spacing:6) {
-                BottomLeftRoundedRectangle(radius: 36)
+                BottomLeftRoundedRectangle(radius: hueManager.ui.footerHeight)
                     .fill(borderColor)
-                    .frame(maxHeight: 36)
+                    .frame(maxHeight: hueManager.ui.footerHeight)
                 Rectangle()
                     .fill(Color(hex:0xED884C))
-                    .frame(height:36)
+                    .frame(height: hueManager.ui.footerHeight)
                     .overlay(alignment: .trailing){
                         Text("LIGHTS")
-                            .font(Font.custom("Okuda Bold", size: 26))
+                            .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))
+                            .kerning(1.2)
                             .foregroundColor(.black)
                             .padding(.bottom, -4)
                             .padding(.trailing, 2)
@@ -91,7 +92,8 @@ struct BridgeView: View {
                     .frame(height:36)
                     .overlay(alignment: .trailing){
                         Text("GROUPS")
-                            .font(Font.custom("Okuda Bold", size: 26))
+                            .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))
+                            .kerning(1.2)
                             .foregroundColor(.black)
                             .padding(.bottom, -4)
                             .padding(.trailing, 2)
@@ -111,7 +113,8 @@ struct BridgeView: View {
                     .frame(height:36)
                     .overlay(alignment: .trailing){
                         Text("SENSORS")
-                            .font(Font.custom("Okuda Bold", size: 26))
+                            .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))
+                            .kerning(1.2)
                             .foregroundColor(.black)
                             .padding(.bottom, -4)
                             .padding(.trailing, 2)
@@ -126,9 +129,9 @@ struct BridgeView: View {
                         
                     }
                 
-                Rectangle(radius: 40)
+                Rectangle(radius: hueManager.ui.footerHeight)
                     .fill(borderColor)
-                    .frame(width:20, height:36)
+                    .frame(width:20, height:hueManager.ui.footerHeight)
             }
         }
         .padding()
