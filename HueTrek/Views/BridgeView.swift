@@ -32,25 +32,25 @@ struct BridgeView: View {
         }
         
         VStack {
-            HStack(spacing:3) {// Header
-                TopLeftRoundedRectangle(radius: 40)
+            HStack(spacing:3) {
+                TopLeftRoundedRectangle(radius: hueManager.ui.headerHeight)
                     .fill(borderColor)
-                    .frame(maxHeight: 40)
+                    .frame(maxHeight: hueManager.ui.headerHeight)
                     .layoutPriority(1)
                 
                 Text( currentView == .lights ? "LIGHTS": currentView == .sensors ? "SENSORS" : "GROUPS")
-                    .font(Font.custom("Okuda Bold", size: 55))
+                    .font(Font.custom("Okuda Bold", size: hueManager.ui.headerFontSize))
+                    .kerning(2)
                     .padding(.bottom,2)
                     .foregroundColor(borderColor)
                     .layoutPriority(1)
-                    .kerning(1.4)
                 
-                Rectangle(radius: 40)
+                Rectangle(radius: hueManager.ui.headerHeight)
                     .fill(borderColor)
-                    .frame(width:40, height:40)
+                    .frame(width:40, height: hueManager.ui.headerHeight)
                     .padding(-3)
             }
-            .frame(maxHeight:40)
+            .frame(maxHeight: hueManager.ui.headerHeight)
             
             switch currentView {
                 case .lights:
@@ -89,7 +89,7 @@ struct BridgeView: View {
                 
                 Rectangle()
                     .fill(Color(hex:0x3399ff))
-                    .frame(height:36)
+                    .frame(height: hueManager.ui.footerHeight)
                     .overlay(alignment: .trailing){
                         Text("GROUPS")
                             .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))
@@ -110,7 +110,7 @@ struct BridgeView: View {
                 
                 Rectangle()
                     .fill(Color(hex:0x9c9cff))
-                    .frame(height:36)
+                    .frame(height: hueManager.ui.footerHeight)
                     .overlay(alignment: .trailing){
                         Text("SENSORS")
                             .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))

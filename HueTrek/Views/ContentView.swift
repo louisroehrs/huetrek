@@ -167,11 +167,13 @@ struct ContentView: View {
                             Text("SCANNING")
                                 .layoutPriority(1)
                                 .font(Font.custom("Okuda Bold", size: 40))
+                                .kerning(1.1)
                                 .foregroundStyle(Color.blue)
                                 .padding(.bottom, 1)
                         } else if hueManager.apiKey == nil || hueManager.isAddingNewBridge {
                             Text("PAIRING")
                                 .font(Font.custom("Okuda Bold", size: 40))
+                                .kerning(1.1)
                                 .foregroundStyle(Color.blue)
                                 .layoutPriority(1)
                                 .padding(.bottom, 1)
@@ -192,6 +194,7 @@ struct ContentView: View {
                                 Text(hueManager.currentBridgeConfig?.name ?? "BRIDGE")
                                     .textCase(.uppercase)
                                     .font(Font.custom("Okuda Bold", size: 40))
+                                    .kerning(1.1)
                                     .foregroundStyle(Color.blue)
                                     .padding(.bottom, 1)
                                     .onTapGesture {

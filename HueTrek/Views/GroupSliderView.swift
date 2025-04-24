@@ -29,7 +29,6 @@ struct GroupSliderView: View {
                 }
             })
             .padding()
-            Text("Value: \(Int(sliderValue))")
         }
         .onChange(of: sliderValue) { newValue in
             if isDragging {

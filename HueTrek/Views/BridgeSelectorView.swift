@@ -16,21 +16,21 @@ struct BridgeSelectorView: View {
         NavigationView {
             VStack (spacing: 6) {
                 HStack(spacing:6) {// Header
-                    TopLeftRoundedRectangle(radius: 40)
+                    TopLeftRoundedRectangle(radius: hueManager.ui.headerHeight)
                         .fill(Color(hex:0xF5ED00))
                     
                     Text( "BRIDGES")
                         .textCase(.uppercase)
-                        .font(Font.custom("Okuda Bold", size: 50))
+                        .font(Font.custom("Okuda Bold", size: hueManager.ui.headerFontSize))
                         .kerning(1.1)
                         .padding(.bottom,2)
                         .foregroundColor(Color(hex:0xF5ED00))
                         .layoutPriority(1)
                     
                     
-                    Rectangle(radius: 40)
+                    Rectangle(radius: hueManager.ui.headerHeight)
                         .fill(Color(hex:0xFF9C00))
-                        .frame(width:40, height:40)
+                        .frame(width:40, height: hueManager.ui.headerHeight)
                         .padding(0)
                         .overlay(
                             Image(systemName: "chevron.down")
@@ -44,7 +44,7 @@ struct BridgeSelectorView: View {
                         }
                     
                 }
-                .frame(maxHeight:40)
+                .frame(maxHeight: hueManager.ui.headerHeight)
                 VStack {
                     Text( "Press and hold name to rename or delete")
                         .textCase(.uppercase)
@@ -79,6 +79,7 @@ struct BridgeSelectorView: View {
                     
                     Text(hueManager.currentBridgeConfig?.name ?? "BRIDGE")
                         .font(Font.custom("Okuda Bold", size: hueManager.ui.footerLabelFontSize))
+                        .kerning(1.2)
                         .textCase(.uppercase)
                         .foregroundStyle(Color.blue)
                         .padding(.bottom, 1)
@@ -90,6 +91,7 @@ struct BridgeSelectorView: View {
                         .overlay( alignment: .trailing) {
                             Text("ADD")
                                 .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))
+                                .kerning(1.1)
                                 .textCase(.uppercase)
                                 .foregroundColor(.black)
                                 .padding(.bottom, -4)
@@ -127,7 +129,7 @@ struct BridgeRowItem: View {
         HStack(spacing: 8) {
             Rectangle()
                 .fill(Color(hex:0x6888FF))
-                .frame(maxHeight:40)
+                .frame(maxHeight:hueManager.ui.rowHeight)
                 .overlay(alignment: .leading){
                     
                     if isEditingName && editingBridgeId == config.id {
@@ -139,7 +141,7 @@ struct BridgeRowItem: View {
                             editingBridgeId = nil
                         })
                         .textCase(.uppercase)
-                        .font(Font.custom("Okuda", size: 24))
+                        .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .foregroundColor(.blue)
                         .focused($isFocused)
@@ -149,7 +151,7 @@ struct BridgeRowItem: View {
                     } else {
                         Text(config.name)
                             .textCase(.uppercase)
-                            .font(Font.custom("Okuda", size: 24))
+                            .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize ))
                             .foregroundColor(.black)
                             .padding(.bottom, -10)
                             .padding(.leading, 8)
@@ -161,12 +163,12 @@ struct BridgeRowItem: View {
             if config.id == hueManager.currentBridgeConfig?.id {
                 RightRoundedRectangle()
                     .fill(Color(hex:0x009900))
-                    .frame(width:40,height:40)
+                    .frame(width:40,height: hueManager.ui.rowHeight)
                     .padding(0)
             } else {
                 RightRoundedRectangle()
                     .fill(Color(.black))
-                    .frame(width:40,height:40)
+                    .frame(width:40,height:hueManager.ui.rowHeight)
                     .padding(0)
             }
         }

@@ -27,21 +27,30 @@ struct BridgeConfiguration: Codable, Identifiable {
 struct UIConfig: Codable {
     var footerHeight: CGFloat
     var headerHeight: CGFloat
+    var headerFontSize: CGFloat
     var footerButtonFontSize: CGFloat
     var footerLabelFontSize: CGFloat
+    var rowFontSize: CGFloat
+    var rowHeight: CGFloat
     
     init(footerHeight: CGFloat,
          headerHeight: CGFloat,
+         headerFontSize: CGFloat,
          footerButtonFontSize: CGFloat,
-         footerLabelFontSize: CGFloat
+         footerLabelFontSize: CGFloat,
+         rowFontSize: CGFloat,
+         rowHeight: CGFloat
     ) {
         self.footerHeight = footerHeight
         self.headerHeight = headerHeight
+        self.headerFontSize = headerFontSize
         self.footerButtonFontSize = footerButtonFontSize
         self.footerLabelFontSize = footerLabelFontSize
+        self.rowFontSize = rowFontSize
+        self.rowHeight = rowHeight
     }
 }
-
+    
 class HueManager: ObservableObject {
     @Published var bridgeConfigurations: [BridgeConfiguration] {
         didSet {
@@ -80,11 +89,14 @@ class HueManager: ObservableObject {
     
     @Published var ui:UIConfig = UIConfig(
         footerHeight:36,
-        headerHeight:36,
+        headerHeight:40,
+        headerFontSize: 55,
         footerButtonFontSize: 28,
-        footerLabelFontSize: 48
+        footerLabelFontSize: 48,
+        rowFontSize: 30,
+        rowHeight: 40
     )
-        
+    
     struct Group: Identifiable, Codable {
         let id: String
         var name: String
@@ -122,9 +134,9 @@ class HueManager: ObservableObject {
         var state: State
         var isColorPickerVisible: Bool = false
         var selectedColor: Color?
-
+        
         private enum CodingKeys: String, CodingKey {
-              case id, name, state
+            case id, name, state
         }
         
         struct State: Codable {
@@ -134,7 +146,7 @@ class HueManager: ObservableObject {
             var sat: Int?
             var reachable: Bool
         }
-    
+        
     }
     
     struct Sensor: Identifiable, Codable {
@@ -228,17 +240,17 @@ class HueManager: ObservableObject {
         let url = URL(string: "https://discovery.meethue.com")!
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
-               if let data = data,
+                if let data = data,
                    let bridges = try? JSONDecoder().decode([BridgeDiscovery].self, from: data),
                    let bridge = bridges.first {
-                   self?.bridgeIP = bridge.internalipaddress
-                   self?.isDiscovering = false
-                   self?.stopSound()
-               } else {
-                   print("db: fallback")
+                    self?.bridgeIP = bridge.internalipaddress
+                    self?.isDiscovering = false
+                    self?.stopSound()
+                } else {
+                    print("db: fallback")
                     // Fall back to UPnP discovery
-                   self?.discoverBridgeUPnP()
-               }
+                    self?.discoverBridgeUPnP()
+                }
             }
         }.resume()
     }
@@ -346,10 +358,10 @@ class HueManager: ObservableObject {
         let red = components[0]
         let green = components[1]
         let blue = components[2]
-
+        
         // Convert RGB to HSB
         let (hue, saturation, brightness) = rgbToHsb(red: red, green: green, blue: blue)
-
+        
         // Update the light's state
         if let index = lights.firstIndex(where: { $0.id == light.id }) {
             lights[index].selectedColor = color
@@ -357,14 +369,14 @@ class HueManager: ObservableObject {
             lights[index].state.sat = Int(saturation * 255) // Convert to Saturation scale
             lights[index].state.bri = Int(brightness * 254) // Convert to Brightness scale
         }
-
+        
         // Send the update to the Hue bridge
         sendColorUpdateToBridge(light: light, hue: Int(hue * 65535), saturation: Int(saturation * 255), brightness: Int(brightness * 254))
     }
     
     private func sendColorUpdateToBridge(light: Light, hue: Int, saturation: Int, brightness: Int) {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
-
+        
         let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights/\(light.id)/state")!
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
@@ -375,7 +387,7 @@ class HueManager: ObservableObject {
             "bri": brightness
         ]
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-
+        
         URLSession.shared.dataTask(with: request) { [weak self] _, _, error in
             DispatchQueue.main.async {
                 if let error = error {
@@ -393,15 +405,15 @@ class HueManager: ObservableObject {
         let maxColor = max(red, green, blue)
         let minColor = min(red, green, blue)
         let delta = maxColor - minColor
-
+        
         var hue: CGFloat = 0
         var saturation: CGFloat = 0
         let brightness = maxColor
-
+        
         if maxColor != 0 {
             saturation = delta / maxColor
         }
-
+        
         if delta != 0 {
             if maxColor == red {
                 hue = (green - blue) / delta
@@ -415,7 +427,7 @@ class HueManager: ObservableObject {
                 hue += 360
             }
         }
-
+        
         return (hue / 360, saturation, brightness)
     }
     
@@ -438,13 +450,13 @@ class HueManager: ObservableObject {
                     print(self?.error ?? "Unknown error")
                     return
                 }
-/*
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    print("JSON Response: \(jsonString)")
-                } else {
-                    print("Failed to convert data to string")
-                }
- */
+                /*
+                 if let jsonString = String(data: data, encoding: .utf8) {
+                 print("JSON Response: \(jsonString)")
+                 } else {
+                 print("Failed to convert data to string")
+                 }
+                 */
                 
                 do {
                     if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
@@ -455,7 +467,7 @@ class HueManager: ObservableObject {
                             else {
                                 return nil
                             }
-                                    
+                            
                             let state =  Light.State(
                                 on:  stateData["on"] as? Bool ?? false,
                                 bri: stateData["bri"] as? Int ?? 0,
@@ -463,12 +475,12 @@ class HueManager: ObservableObject {
                                 sat: stateData["sat"] as? Int ?? 0,
                                 reachable: true)
                             // TODO: fix reachable...
-                                    
-                        
-
+                            
+                            
+                            
                             var thisLight = Light(id: key, name: name, state: state)
                             thisLight.selectedColor = self?.hueLightToSwiftColor(light: thisLight)
-
+                            
                             return thisLight
                         }
                         self?.lights.sort { $0.name < $1.name }
@@ -480,14 +492,14 @@ class HueManager: ObservableObject {
             }
         }.resume()
     }
-
- 
+    
+    
     func playSound(sound: String) {
         guard let url = Bundle.main.url(forResource: sound, withExtension: "mp3") else {
             print("Sound file not found")
             return
         }
-
+        
         do {
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.play() // Play the sound
@@ -513,7 +525,7 @@ class HueManager: ObservableObject {
         } else {
             playSound(sound: "lightOn")
         }
-
+        
         let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights/\(light.id)/state")!
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
@@ -697,7 +709,7 @@ class HueManager: ObservableObject {
         
         var myGroup = self.groups.first(where: {$0.id == group.id})
         var myGroupIndex = self.groups.firstIndex(where: {$0.id == group.id})
-
+        
         myGroup!.action.bri = brightness
         
         self.groups[myGroupIndex!] = myGroup!
@@ -708,8 +720,8 @@ class HueManager: ObservableObject {
                 self?.fetchGroups()
             }
         }.resume()
-         
-         
+        
+        
     }
     
     func updateGroupColor(_ group: Group, color: Color) {
@@ -735,6 +747,7 @@ class HueManager: ObservableObject {
         }.resume()
     }
 }
+
 
 // Add this extension to HueManager
 extension HueManager {

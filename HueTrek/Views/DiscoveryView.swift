@@ -13,22 +13,23 @@ struct DiscoveryView: View {
     var body: some View {
         VStack(spacing:4) {
             HStack(spacing:4) {
-                TopLeftRoundedRectangle(radius: 40)
+                TopLeftRoundedRectangle(radius: hueManager.ui.headerHeight)
                     .fill(Color(hex:0xCCE0F7))
-                    .frame(maxHeight: 40)
+                    .frame(maxHeight: hueManager.ui.headerHeight)
                     .layoutPriority(1)
                 
                 Text("BRIDGE")
-                    .font(Font.custom("Okuda Bold", size: 55))
+                    .font(Font.custom("Okuda Bold", size: hueManager.ui.headerFontSize))
                     .kerning(1.1)
                     .padding(.bottom,2)
                     .foregroundColor(Color(hex:0xCCE0F7))
                     .layoutPriority(1)
                     
-                Rectangle(radius: 40)
+                Rectangle(radius: hueManager.ui.headerHeight)
                     .fill(Color(hex:0xCCE0F7))
-                    .frame(width:60, height:40).padding(0)
-            }.frame(maxHeight:40)
+                    .frame(width:60, height: hueManager.ui.headerHeight).padding(0)
+            }
+            .frame(maxHeight: hueManager.ui.headerHeight)
             
             VStack {
                 VStack(spacing: 40) {

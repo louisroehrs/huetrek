@@ -30,8 +30,8 @@
             filePath = "HueTrek/HueManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "336"
-            endingLineNumber = "336"
+            startingLineNumber = "348"
+            endingLineNumber = "348"
             landmarkName = "hueLightToSwiftColor(light:)"
             landmarkType = "7">
          </BreakpointContent>

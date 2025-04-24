@@ -32,7 +32,6 @@ struct GroupsView: View {
         }
         .background(Color(hex: 0x000000))
         .overlay(
-            // Left border
             Rectangle()
                 .frame(width: 12)
                 .foregroundColor(borderColor)
@@ -59,17 +58,17 @@ struct GroupRowView: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text(group.name)
-                        .font(Font.custom("Okuda", size: 24))
+                        .font(Font.custom("Okuda", size: 30))
                         .foregroundColor(.blue)
+                        .textCase(.uppercase)
                     
-                    Text("\(group.lights.count) lights • \(group.class)")
-                        .font(Font.custom("Okuda", size: 16))
+                    Text("\(group.lights.count) lights")
+                        .font(Font.custom("Okuda", size: 24))
                         .foregroundColor(.gray)
                 }
                 
                 Spacer()
                 
-                // Power toggle button
                 Button(action: {
                     hueManager.toggleGroup(group)
                     hueManager.playSound(sound: "light" + (group.action.on ? "Off" : "On"))
@@ -79,8 +78,7 @@ struct GroupRowView: View {
                         .foregroundColor(group.action.on ? .green : .red)
                 }
             }
-            
-            // Brightness slider
+        
             HStack {
                 Image(systemName: "sun.min")
                     .foregroundColor(.gray)

@@ -54,8 +54,8 @@ struct LightRowView: View {
                 Text(light.name)
                     .textCase(.uppercase)
                     .offset(x:10,y:5)
-                    .font(Font.custom("Okuda", size: 30))
-                    .frame(width: UIScreen.main.bounds.width - 200, height:40, alignment: .leading)
+                    .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
+                    .frame(width: UIScreen.main.bounds.width - 200, height: hueManager.ui.rowHeight, alignment: .leading)
                     .background(Color.blue)
                     .onTapGesture {
                         hueManager.toggleLight(light)
@@ -64,7 +64,7 @@ struct LightRowView: View {
                 Image(systemName: light.state.on! ? "sun.max.fill" : "sun.min")
                     .imageScale(.large)
                     .foregroundColor(light.state.on! ? .yellow : .black)
-                    .frame(width:40, height:40)
+                    .frame(width:40, height: hueManager.ui.rowHeight)
                     .background(Color.black)
                     .onTapGesture {
                         hueManager.toggleLight(light)
@@ -73,7 +73,7 @@ struct LightRowView: View {
                 Image(systemName: "paintpalette.fill")
                     .imageScale(.large)
                     .foregroundColor(Color(hue: Double(light.state.hue!) / 65536.0, saturation: Double(light.state.sat!) / 255.0, brightness: Double(light.state.bri!) / 254.0))
-                    .frame(width:40, height:40)
+                    .frame(width:40, height: hueManager.ui.rowHeight)
                     .background(Color.black)
                     .clipped()
                     .overlay
@@ -89,13 +89,13 @@ struct LightRowView: View {
                     .labelsHidden()
                     .scaleEffect(x:20, y:20)
                     .opacity(0.10)
-                    .frame(width:40, height: 40)
+                    .frame(width:40, height: hueManager.ui.rowHeight)
                     .clipped()
                 }
                 
                 RightRoundedRectangle()
                     .fill(Color(.blue))
-                    .frame(width:50,height:40)
+                    .frame(width:50,height: hueManager.ui.rowHeight)
                 
             }
             if light.isColorPickerVisible {
@@ -107,7 +107,7 @@ struct LightRowView: View {
                     .cornerRadius(20)
                 RightRoundedRectangle()
                     .fill(Color(.blue))
-                    .frame(width:.infinity, height:40)
+                    .frame(width:.infinity, height: hueManager.ui.rowHeight)
             }
         }
         .padding(.bottom, 0)
