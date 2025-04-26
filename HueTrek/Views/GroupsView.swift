@@ -12,21 +12,26 @@ struct GroupsView: View {
     let borderColor: Color
     
     var body: some View {
+       
         VStack {
-            List {
-                ForEach(hueManager.groups) { group in
-                    GroupRowView(group: group)
-                        .listRowBackground(Color.black)
-                        .background(Color.black)
-                        .padding(.top, 20)
+            if let error = hueManager.error {
+                NoBridgeFoundView(repeatAction: hueManager.fetchGroups)
+            } else {
+                List {
+                    ForEach(hueManager.groups) { group in
+                        GroupRowView(group: group)
+                            .listRowBackground(Color.black)
+                            .background(Color.black)
+                            .padding(.top, 20)
+                    }
                 }
-            }
-            .listStyle(.plain)
-            .padding(.leading, 12)
-            .padding(.trailing,0)
-            .scrollContentBackground(.hidden)
-            .refreshable {
-                hueManager.fetchGroups()
+                .listStyle(.plain)
+                .padding(.leading, 12)
+                .padding(.trailing,0)
+                .scrollContentBackground(.hidden)
+                .refreshable {
+                    hueManager.fetchGroups()
+                }
             }
         }
         .background(Color(hex: 0x000000))

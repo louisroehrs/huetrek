@@ -13,22 +13,26 @@ struct LightsView: View {
     var body: some View {
         
         VStack {
-           
-            List {
-                ForEach(hueManager.lights) { light in
-                    LightRowView(light: light)
-                        .listRowBackground(Color.black)
-                        .background(Color.black)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+            if let error = hueManager.error {
+                NoBridgeFoundView(repeatAction: hueManager.fetchLights)
+            } else {
+                
+                List {
+                    ForEach(hueManager.lights) { light in
+                        LightRowView(light: light)
+                            .listRowBackground(Color.black)
+                            .background(Color.black)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
+                .listStyle(.plain)
+                .padding(.leading, 12)
+                .scrollContentBackground(.hidden)
+                .refreshable {
+                    hueManager.fetchLights()
+                }
+                
             }
-            .listStyle(.plain)
-            .padding(.leading, 12)
-            .scrollContentBackground(.hidden)
-            .refreshable {
-                hueManager.fetchLights()
-            }
-          
         }
         .background(Color(hex: 0x000000))
         .overlay(
@@ -39,9 +43,9 @@ struct LightsView: View {
                 .padding(.vertical, 0),
             alignment: .leading
         )
-
     }
 }
+
 
 struct LightRowView: View {
     @EnvironmentObject private var hueManager: HueManager

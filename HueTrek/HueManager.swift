@@ -440,7 +440,6 @@ class HueManager: ObservableObject {
                 if let error = error {
                     self?.error = error.localizedDescription
                     print(self?.error ?? "Unknown error")
-                    self?.showingBridgeSelector = true
                     return
                 }
                 

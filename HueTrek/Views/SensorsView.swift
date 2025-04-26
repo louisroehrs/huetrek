@@ -14,18 +14,22 @@ struct SensorsView: View {
     var body: some View {
         
         VStack {
-            List {
-                ForEach(hueManager.sensors) { sensor in
-                    SensorRowView(sensor: sensor)
-                        .listRowBackground(Color.black)
-                        .background(Color.black)
+            if let error = hueManager.error {
+                NoBridgeFoundView(repeatAction: hueManager.fetchSensors)
+            } else {
+                List {
+                    ForEach(hueManager.sensors) { sensor in
+                        SensorRowView(sensor: sensor)
+                            .listRowBackground(Color.black)
+                            .background(Color.black)
+                    }
                 }
-            }
-            .listStyle(.plain)
-            .padding(.leading, 12)
-            .scrollContentBackground(.hidden)
-            .onAppear {
-                hueManager.fetchSensors()
+                .listStyle(.plain)
+                .padding(.leading, 12)
+                .scrollContentBackground(.hidden)
+                .onAppear {
+                    hueManager.fetchSensors()
+                }
             }
         }
         .background(Color(hex: 0x000000))
@@ -39,8 +43,6 @@ struct SensorsView: View {
         )
     }
 }
-
-
 
 struct SensorRowView: View {
     let sensor: HueManager.Sensor
