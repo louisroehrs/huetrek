@@ -81,7 +81,7 @@ struct LightRowView: View {
                     ColorPicker(
                         "",
                         selection: Binding(
-                            get: {light.selectedColor! ?? Color.white},
+                            get: {light.selectedColor!},
                             set: {
                                 hueManager.updateColor(light: light, color: $0)
                             }),

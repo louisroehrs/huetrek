@@ -30,10 +30,10 @@ struct GroupSliderView: View {
             })
             .padding()
         }
-        .onChange(of: sliderValue) { newValue in
+        .onChange(of: sliderValue) { 
             if isDragging {
                 // Throttle updates to once per second
-                throttledUpdate(value: newValue)
+                throttledUpdate(value: sliderValue)
             }
         }
     }

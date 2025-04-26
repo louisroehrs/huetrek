@@ -167,7 +167,7 @@ struct GroupRowView: View {
                         },
                         set: { sliderValue in
                             var myGroup = hueManager.groups.first(where: {$0.id == group.id} )
-                            var myGroupIndex = hueManager.groups.firstIndex(where: {$0.id == group.id} )
+                            let myGroupIndex = hueManager.groups.firstIndex(where: {$0.id == group.id} )
                             myGroup!.action.bri = Int(sliderValue)
                             hueManager.groups[myGroupIndex!] = myGroup!
                         }

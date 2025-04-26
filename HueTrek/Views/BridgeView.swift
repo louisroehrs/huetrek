@@ -26,8 +26,6 @@ struct BridgeView: View {
                 return Color(hex:0x9c9cff)
             case .groups:
                 return Color(hex:0x3399ff)
-            default:
-                return Color(hex:0x87eeff)
             }
         }
         

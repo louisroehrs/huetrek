@@ -84,6 +84,7 @@ class HueManager: ObservableObject {
     @Published var error: String?
     @Published var isAddingNewBridge = false
     @Published var newBridgeAdded = false
+    @Published var showingBridgeSelector = false
     
     @Published var sensors: [Sensor] = []
     
@@ -173,7 +174,6 @@ class HueManager: ObservableObject {
     }
     
     init() {
-        // Load saved bridge configurations
         if let data = UserDefaults.standard.data(forKey: "bridgeConfigurations"),
            let decoded = try? JSONDecoder().decode([BridgeConfiguration].self, from: data) {
             self.bridgeConfigurations = decoded
@@ -181,7 +181,6 @@ class HueManager: ObservableObject {
             self.bridgeConfigurations = []
         }
         
-        // Load current bridge configuration
         if let currentBridgeId = UserDefaults.standard.string(forKey: "currentBridgeId"),
            let uuid = UUID(uuidString: currentBridgeId),
            let config = bridgeConfigurations.first(where: { $0.id == uuid }) {
@@ -381,7 +380,7 @@ class HueManager: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         let body: [String: Any] = [
-            "on": light.state.on, // Keep the current on/off state
+            "on": light.state.on as Any,
             "hue": hue,
             "sat": saturation,
             "bri": brightness
@@ -435,13 +434,13 @@ class HueManager: ObservableObject {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
         let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights")!
-        print("url \(url)")
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 print("dispatch")
                 if let error = error {
                     self?.error = error.localizedDescription
                     print(self?.error ?? "Unknown error")
+                    self?.showingBridgeSelector = true
                     return
                 }
                 
@@ -642,8 +641,8 @@ class HueManager: ObservableObject {
                                   let name = groupData["name"] as? String,
                                   let lights = groupData["lights"] as? [String],
                                   let type = groupData["type"] as? String,
-                                  var stateData = groupData["state"] as? [String: Any],
-                                  var actionData = groupData["action"] as? [String: Any],
+                                  let stateData = groupData["state"] as? [String: Any],
+                                  let actionData = groupData["action"] as? [String: Any],
                                   let className = groupData["class"] as? String else {
                                 return nil
                             }
@@ -708,7 +707,7 @@ class HueManager: ObservableObject {
         request.httpBody = try? JSONEncoder().encode(["bri": brightness])
         
         var myGroup = self.groups.first(where: {$0.id == group.id})
-        var myGroupIndex = self.groups.firstIndex(where: {$0.id == group.id})
+        let myGroupIndex = self.groups.firstIndex(where: {$0.id == group.id})
         
         myGroup!.action.bri = brightness
         

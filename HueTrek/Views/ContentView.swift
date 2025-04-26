@@ -132,10 +132,9 @@ struct BottomLeftRoundedRectangle: Shape {
 
 struct ContentView: View {
     @EnvironmentObject private var hueManager: HueManager
-    @State private var showingPairingAlert = false
     @State private var isEditingBridgeName = false
     @State private var editedBridgeName = ""
-    @State private var showingBridgeSelector = false
+
     
     @State var currentView: ViewType = ViewType.lights
     
@@ -199,7 +198,7 @@ struct ContentView: View {
                                     .padding(.bottom, 1)
                                     .onTapGesture {
                                         hueManager.playSound(sound: "colorpickerslideup")
-                                        showingBridgeSelector = true
+                                        hueManager.showingBridgeSelector = true
                                     }
                                     .layoutPriority(1)
                             }
@@ -212,9 +211,9 @@ struct ContentView: View {
                     .frame(maxHeight:30)
                 }
             }
-            .sheet(isPresented: $showingBridgeSelector) {
+            .sheet(isPresented: $hueManager.showingBridgeSelector) {
                 BridgeSelectorView()
-            } 
+            }
         }
     }
 }
