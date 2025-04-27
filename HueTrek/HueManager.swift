@@ -39,6 +39,8 @@ struct UIConfig: Codable {
     var footerLabelFontSize: CGFloat
     var rowFontSize: CGFloat
     var rowHeight: CGFloat
+    var itemHeight: CGFloat
+    var itemFontSize: CGFloat
     
     init(footerHeight: CGFloat,
          headerHeight: CGFloat,
@@ -46,7 +48,9 @@ struct UIConfig: Codable {
          footerButtonFontSize: CGFloat,
          footerLabelFontSize: CGFloat,
          rowFontSize: CGFloat,
-         rowHeight: CGFloat
+         rowHeight: CGFloat,
+         itemHeight: CGFloat,
+         itemFontSize: CGFloat
     ) {
         self.footerHeight = footerHeight
         self.headerHeight = headerHeight
@@ -55,6 +59,8 @@ struct UIConfig: Codable {
         self.footerLabelFontSize = footerLabelFontSize
         self.rowFontSize = rowFontSize
         self.rowHeight = rowHeight
+        self.itemHeight = itemHeight
+        self.itemFontSize = itemFontSize
     }
 }
     
@@ -73,8 +79,7 @@ class HueManager: ObservableObject {
                 UserDefaults.standard.set(config.id.uuidString, forKey: "currentBridgeId")
                 bridgeIP = config.bridgeIP
                 apiKey = config.apiKey
-                fetchLights()
-                fetchGroups()
+                fetchCurrentTab()
             } else {
                 bridgeIP = nil
                 apiKey = nil
@@ -103,7 +108,9 @@ class HueManager: ObservableObject {
         footerButtonFontSize: 28,
         footerLabelFontSize: 48,
         rowFontSize: 30,
-        rowHeight: 40
+        rowHeight: 40,
+        itemHeight: 24,
+        itemFontSize:32
     )
     
     struct Group: Identifiable, Codable {
@@ -181,7 +188,6 @@ class HueManager: ObservableObject {
         }
     }
     
-    // MARK: - Error Handling
     private enum HueError {
         case network(Error)
         case noData
@@ -501,12 +507,12 @@ class HueManager: ObservableObject {
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             if let error = error {
-                self?.handleError(.network(error), showInUI: false)
+                self?.handleError(.network(error), showInUI: true)
                 return
             }
             
             guard let data = data else {
-                self?.handleError(.noData, showInUI: false)
+                self?.handleError(.noData, showInUI: true)
                 return
             }
             
@@ -521,7 +527,7 @@ class HueManager: ObservableObject {
                     }
                 }
             } catch {
-                self?.handleError(.decodingError(error), showInUI: false)
+                self?.handleError(.decodingError(error), showInUI: true)
             }
         }.resume()
     }
@@ -588,32 +594,41 @@ class HueManager: ObservableObject {
     func fetchSensors() {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/sensors")!
+    //    let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/sensors")!
+        
+        let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/sensorsconfig.json")!
+        
+        print("hello sensors")
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             if let error = error {
-                self?.handleError(.network(error), showInUI: false)
+                self?.handleError(.network(error), showInUI: true)
                 return
             }
             
             guard let data = data else {
-                self?.handleError(.noData, showInUI: false)
+                self?.handleError(.noData, showInUI: true)
                 return
             }
             
             do {
-                if let sensorsData = try JSONDecoder().decode([String: Sensor].self, from: data) {
-                    DispatchQueue.main.async {
-                        self?.sensors = sensorsData.map { id, sensor in
-                            var sensor = sensor
-                            sensor.id = id
-                            return sensor
-                        }
-                        self?.sensors.sort { $0.name < $1.name }
+                let sensorsData = try JSONDecoder().decode([String: Sensor].self, from: data)
+                DispatchQueue.main.async {
+                    self?.sensors = sensorsData.map { id, sensor in
+                        Sensor(id: id,
+                               name: sensor.name,
+                               type: sensor.type,
+                               manufacturername: sensor.manufacturername,
+                               productname: sensor.productname,
+                               state: sensor.state,
+                               config: sensor.config)
                     }
+                    self?.sensors.sort { $0.name < $1.name }
                 }
+                
             } catch {
-                self?.handleError(.decodingError(error), showInUI: false)
+                print(error)
+                self?.handleError(.decodingError(error), showInUI: true)
             }
         }.resume()
     }
@@ -621,35 +636,68 @@ class HueManager: ObservableObject {
     func fetchGroups() {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
+//        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
+        
+        let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/groupsconfig.json")!
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-            if let error = error {
-                self?.handleError(.network(error), showInUI: false)
-                return
-            }
-            
-            guard let data = data else {
-                self?.handleError(.noData, showInUI: false)
-                return
-            }
-            
-            do {
-                let groupsData = try JSONDecoder().decode([String: Group].self, from: data)
-                DispatchQueue.main.async {
-                    self?.groups = groupsData.map { id, group in
-                        Group(id: id,
-                              name: group.name,
-                              lights: group.lights,
-                              type: group.type,
-                              state: group.state,
-                              action: group.action,
-                              class: group.class)
-                    }
-                    self?.groups.sort { $0.name < $1.name }
+            DispatchQueue.main.async {
+                if let error = error {
+                    self?.handleError(.network(error), showInUI: true)
+                    return
                 }
-            } catch {
-                self?.handleError(.decodingError(error), showInUI: false)
+                
+                guard let data = data else {
+                    self?.handleError(.noData, showInUI: true)
+                    return
+                }
+                
+                do {
+                    if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
+                        self?.groups = json.compactMap { (key, value) -> Group? in
+                            guard let groupData = value as? [String: Any],
+                                  let name = groupData["name"] as? String,
+                                  let lights = groupData["lights"] as? [String],
+                                  let type = groupData["type"] as? String,
+                                  let stateData = groupData["state"] as? [String: Any],
+                                  let actionData = groupData["action"] as? [String: Any],
+                                  let className = groupData["class"] as? String else {
+                                return nil
+                            }
+                            
+                            let state = Group.GroupState(
+                                all_on: stateData["all_on"] as? Bool ?? false,
+                                any_on: stateData["any_on"] as? Bool ?? false
+                            )
+                            
+                            let action = Group.GroupAction(
+                                on: actionData["on"] as? Bool ?? false,
+                                bri: actionData["bri"] as? Int ?? 0,
+                                hue: actionData["hue"] as? Int ?? 0,
+                                sat: actionData["sat"] as? Int ?? 0,
+                                effect: actionData["effect"] as? String,
+                                xy: actionData["xy"] as? [Double],
+                                ct: actionData["ct"] as? Int,
+                                alert: actionData["alert"] as? String,
+                                colormode: actionData["colormode"] as? String
+                            )
+                            
+                            return Group(
+                                id: key,
+                                name: name,
+                                lights: lights,
+                                type: type,
+                                state: state,
+                                action: action,
+                                class: className
+                            )
+                        }
+                        self?.groups.sort { $0.name < $1.name }
+                        self?.error = nil
+                    }
+                } catch {
+                    self?.handleError(.decodingError(error), showInUI: true)
+                }
             }
         }.resume()
     }

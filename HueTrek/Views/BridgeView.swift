@@ -73,10 +73,9 @@ struct BridgeView: View {
                                 hueManager.playSound(sound: "panelswitch")
                                 hueManager.fetchLights()
                                 withAnimation(Animation.easeInOut(duration: 0.5),
-                                              { hueManager.currentTab = .lights}
+                                            { hueManager.currentTab = .lights}
                                 )
                             }
-                        
                     }
                 
                 Rectangle()

@@ -27,8 +27,8 @@ struct SensorsView: View {
                 .listStyle(.plain)
                 .padding(.leading, 12)
                 .scrollContentBackground(.hidden)
-                .onAppear {
-                    hueManager.fetchSensors()
+                .refreshable {
+                    hueManager.fetchGroups()
                 }
             }
         }
