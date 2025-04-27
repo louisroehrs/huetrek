@@ -20,6 +20,7 @@ struct LightsView: View {
                 List {
                     ForEach(hueManager.lights) { light in
                         LightRowView(light: light)
+                            .id(light.id)
                             .listRowBackground(Color.black)
                             .background(Color.black)
                             .frame(maxWidth: .infinity, alignment: .leading)

@@ -533,16 +533,13 @@ class HueManager: ObservableObject {
                                 bri: stateData["bri"] as? Int ?? 0,
                                 hue: stateData["hue"] as? Int ?? 0,
                                 sat: stateData["sat"] as? Int ?? 0,
-                                reachable: true)
-                            // TODO: fix reachable...
-                            
-                            
-                            
+                                reachable: stateData["reachable"] as? Bool ?? false)
+                                         
                             var thisLight = Light(id: key, name: name, state: state)
                             thisLight.selectedColor = self?.hueLightToSwiftColor(light: thisLight)
-                            
                             return thisLight
                         }
+                        self?.lights.sort { $0.name < $1.name }
                     }
                 } catch {
                     self?.handleError(.decodingError(error), showInUI: true)
@@ -567,6 +564,14 @@ class HueManager: ObservableObject {
     
     func stopSound() {
         audioPlayer?.stop()
+    }
+    
+    func batteryToSFSymbol(_ batteryPercent: Int) -> String {
+        if batteryPercent>90 { return "battery.100" }
+        if batteryPercent>75 { return "battery.75"  }
+        if batteryPercent>50 { return "battery.50"  }
+        if batteryPercent>25 { return "battery.25"  }
+        return "battery.0"
     }
     
     func toggleColorPicker(_ light: Light) {
@@ -613,41 +618,70 @@ class HueManager: ObservableObject {
     func fetchSensors() {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-    //    let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/sensors")!
+    //  let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/sensors")!
         
         let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/sensorsconfig.json")!
         
         print("hello sensors")
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-            if let error = error {
-                self?.handleError(.network(error), showInUI: true)
-                return
-            }
-            
-            guard let data = data else {
-                self?.handleError(.noData, showInUI: true)
-                return
-            }
-            
-            do {
-                let sensorsData = try JSONDecoder().decode([String: Sensor].self, from: data)
-                DispatchQueue.main.async {
-                    self?.sensors = sensorsData.map { id, sensor in
-                        Sensor(id: id,
-                               name: sensor.name,
-                               type: sensor.type,
-                               manufacturername: sensor.manufacturername,
-                               productname: sensor.productname,
-                               state: sensor.state,
-                               config: sensor.config)
-                    }
-                    self?.sensors.sort { $0.name < $1.name }
+            DispatchQueue.main.async {
+                if let error = error {
+                    self?.handleError(.network(error), showInUI: true)
+                    return
                 }
                 
-            } catch {
-                print(error)
-                self?.handleError(.decodingError(error), showInUI: true)
+                guard let data = data else {
+                    self?.handleError(.noData, showInUI: true)
+                    return
+                }
+                
+                do {
+                    if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
+                        self?.sensors = json.compactMap { (key, value) -> Sensor? in
+                            guard let sensorData = value as? [String: Any],
+                                  let name = sensorData["name"] as? String,
+                                  let type = sensorData["type"] as? String,
+                                  let manufacturer = sensorData["manufacturername"] as? String,
+                                  let productName = sensorData["productname"] as? String,
+                                  let stateData = sensorData["state"] as? [String: Any],
+                                  let configData = sensorData["config"] as? [String: Any],
+                                  let on = configData["on"] as? Bool,
+                                  let battery = configData["battery"] as? Int,
+                                  let reachable = configData["reachable"] as? Bool else {
+                                return nil
+                            }
+                            
+                            let state = Sensor.SensorState(
+                                rotaryevent: stateData["rotaryevent"] as? Int,
+                                expectedrotation: stateData["expectedrotation"] as? Int,
+                                expectedeventduration: stateData["expectedeventduration"] as? Int,
+                                lastupdated: stateData["lastupdated"] as? String
+                            )
+                            
+                            let config = Sensor.SensorConfig(
+                                on: on,
+                                battery: battery,
+                                reachable: reachable
+                            )
+                            
+                            return Sensor(
+                                id: key,
+                                name: name,
+                                type: type,
+                                manufacturername: manufacturer,
+                                productname: productName,
+                                state: state,
+                                config: config
+                            )
+                            
+                        }
+                        self?.sensors.sort{ $0.name < $1.name }
+                    }
+                } catch {
+                    print(error)
+                    self?.handleError(.decodingError(error), showInUI: true)
+                }
             }
         }.resume()
     }
@@ -655,9 +689,9 @@ class HueManager: ObservableObject {
     func fetchGroups() {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
+//        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
         
-//        let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/groupsconfig.json")!
+        let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/groupsconfig.json")!
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
