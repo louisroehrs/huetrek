@@ -503,31 +503,50 @@ class HueManager: ObservableObject {
     func fetchLights() {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights")!
+//        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights")!
+          let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/lightsconfig.json")!
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-            if let error = error {
-                self?.handleError(.network(error), showInUI: true)
-                return
-            }
-            
-            guard let data = data else {
-                self?.handleError(.noData, showInUI: true)
-                return
-            }
-            
-            do {
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    let lightsData = try JSONDecoder().decode([String: LightResponse].self, from: data)
-                    DispatchQueue.main.async {
-                        self?.lights = lightsData.map { id, response in
-                            Light(id: id, name: response.name, state: response.state)
-                        }
-                        self?.lights.sort { $0.name < $1.name }
-                    }
+            DispatchQueue.main.async {
+                if let error = error {
+                    self?.handleError(.network(error), showInUI: true)
+                    return
                 }
-            } catch {
-                self?.handleError(.decodingError(error), showInUI: true)
+                
+                guard let data = data else {
+                    self?.handleError(.noData, showInUI: true)
+                    return
+                }
+                
+                do {
+                    if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
+                        self?.lights = json.compactMap { (key, value) -> Light? in
+                            guard let lightData = value as?[String: Any],
+                                  let name = lightData["name"] as? String,
+                                  let stateData = lightData["state"] as? [String: Any]
+                            else {
+                                return nil
+                            }
+                            
+                            let state =  Light.State(
+                                on:  stateData["on"] as? Bool ?? false,
+                                bri: stateData["bri"] as? Int ?? 0,
+                                hue: stateData["hue"] as? Int ?? 0,
+                                sat: stateData["sat"] as? Int ?? 0,
+                                reachable: true)
+                            // TODO: fix reachable...
+                            
+                            
+                            
+                            var thisLight = Light(id: key, name: name, state: state)
+                            thisLight.selectedColor = self?.hueLightToSwiftColor(light: thisLight)
+                            
+                            return thisLight
+                        }
+                    }
+                } catch {
+                    self?.handleError(.decodingError(error), showInUI: true)
+                }
             }
         }.resume()
     }
@@ -636,9 +655,9 @@ class HueManager: ObservableObject {
     func fetchGroups() {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-//        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
+        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
         
-        let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/groupsconfig.json")!
+//        let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/groupsconfig.json")!
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
