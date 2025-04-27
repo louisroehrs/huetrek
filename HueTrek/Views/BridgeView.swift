@@ -7,19 +7,13 @@
 
 import SwiftUI
     
-enum ViewType {
-    case lights
-    case sensors
-    case groups
-}
 
 struct BridgeView: View {
     @EnvironmentObject var hueManager: HueManager
-    @State var currentView: ViewType = .lights
     
     var body: some View {
         var borderColor: Color {
-            switch currentView {
+            switch hueManager.currentTab {
             case .lights:
                 return Color(hex:0xED884C)
             case .sensors:
@@ -36,7 +30,7 @@ struct BridgeView: View {
                     .frame(maxHeight: hueManager.ui.headerHeight)
                     .layoutPriority(1)
                 
-                Text( currentView == .lights ? "LIGHTS": currentView == .sensors ? "SENSORS" : "GROUPS")
+                Text( hueManager.currentTab == .lights ? "LIGHTS": hueManager.currentTab == .sensors ? "SENSORS" : "GROUPS")
                     .font(Font.custom("Okuda Bold", size: hueManager.ui.headerFontSize))
                     .kerning(2)
                     .padding(.bottom,2)
@@ -50,7 +44,7 @@ struct BridgeView: View {
             }
             .frame(maxHeight: hueManager.ui.headerHeight)
             
-            switch currentView {
+            switch hueManager.currentTab {
                 case .lights:
                     LightsView(borderColor: borderColor).listRowSpacing(-10)
                 case .sensors:
@@ -79,7 +73,7 @@ struct BridgeView: View {
                                 hueManager.playSound(sound: "panelswitch")
                                 hueManager.fetchLights()
                                 withAnimation(Animation.easeInOut(duration: 0.5),
-                                              { currentView = .lights}
+                                              { hueManager.currentTab = .lights}
                                 )
                             }
                         
@@ -100,7 +94,7 @@ struct BridgeView: View {
                                 hueManager.playSound(sound: "panelswitch")
                                 hueManager.fetchGroups()
                                 withAnimation(Animation.easeInOut(duration: 0.5),
-                                              { currentView = .groups}
+                                              { hueManager.currentTab = .groups}
                                 )
                             }
                         
@@ -121,7 +115,7 @@ struct BridgeView: View {
                                 hueManager.playSound(sound: "panelswitch")
                                 hueManager.fetchSensors()
                                 withAnimation(Animation.easeInOut(duration: 0.5),
-                                              { currentView = .sensors}
+                                              { hueManager.currentTab = .sensors}
                                 )
                             }
                         
@@ -139,7 +133,7 @@ struct BridgeView: View {
 
 struct BridgeView_Preview : PreviewProvider {
     static var previews: some View {
-        BridgeView(currentView: ViewType.lights)
+        BridgeView()
             .environmentObject(HueManager())
     }
 }

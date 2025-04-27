@@ -10,7 +10,6 @@ import SwiftUI
 struct BridgeSelectorView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject private var hueManager: HueManager
-
     
     var body: some View {
         NavigationView {
@@ -40,6 +39,7 @@ struct BridgeSelectorView: View {
                         )
                         .onTapGesture {
                             hueManager.playSound(sound: "colorpickerslidedown")
+                            hueManager.fetchCurrentTab()
                             presentationMode.wrappedValue.dismiss()
                         }
                     

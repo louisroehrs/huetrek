@@ -110,7 +110,7 @@ struct LightRowView: View {
                     .background(Color.white.opacity(0.8))
                     .cornerRadius(20)
                 RightRoundedRectangle()
-                    .fill(Color(.blue))
+                    .fill(Color( light.state.reachable ? .blue : .gray))
                     .frame(width:.infinity, height: hueManager.ui.rowHeight)
             }
         }

@@ -135,9 +135,6 @@ struct ContentView: View {
     @State private var isEditingBridgeName = false
     @State private var editedBridgeName = ""
 
-    
-    @State var currentView: ViewType = ViewType.lights
-    
     var body: some View {
         NavigationView {
             Group {
@@ -222,3 +219,4 @@ struct ContentView: View {
     ContentView()
         .environmentObject(HueManager())
 } 
+

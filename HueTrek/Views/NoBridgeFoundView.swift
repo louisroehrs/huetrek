@@ -22,20 +22,21 @@ struct NoBridgeFoundView: View {
                     .kerning(1.3)
                     .foregroundColor(Color(hex:0xFF0000))
                 
-                HStack(spacing: 20) {
+                HStack(spacing: 6) {
                     Button(action: {
                         hueManager.error = nil
                         repeatAction()
                     }) {
                         Text("TRY AGAIN")
                             .textCase(.uppercase)
-                            .font(Font.custom("Okuda Bold", size: 25))
+                            .font(Font.custom("Okuda Bold", size: hueManager.ui.rowFontSize))
+                            .offset(x:15,y:5)
                             .kerning(1.2)
                             .foregroundColor(.black)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 10)
                             .background(Color(hex:0xFF9C00))
-                            .cornerRadius(5)
+                            .cornerRadius(0)
                     }
                     
                     Button(action: {
@@ -44,13 +45,14 @@ struct NoBridgeFoundView: View {
                     }) {
                         Text("SELECT BRIDGE")
                             .textCase(.uppercase)
-                            .font(Font.custom("Okuda Bold", size: 25))
+                            .font(Font.custom("Okuda Bold", size: hueManager.ui.rowFontSize))
+                            .offset(x:15,y:5)
                             .kerning(1.2)
                             .foregroundColor(.black)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 10)
                             .background(Color(hex:0xFF9C00))
-                            .cornerRadius(5)
+                            .cornerRadius(0)
 
                     }
                 }
