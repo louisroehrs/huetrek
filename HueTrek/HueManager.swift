@@ -503,8 +503,9 @@ class HueManager: ObservableObject {
     func fetchLights() {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-//        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights")!
-          let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/lightsconfig.json")!
+        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights")!
+        
+        // let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/lightsconfig.json")!
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
@@ -618,9 +619,9 @@ class HueManager: ObservableObject {
     func fetchSensors() {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-    //  let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/sensors")!
+        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/sensors")!
         
-        let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/sensorsconfig.json")!
+        // let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/sensorsconfig.json")!
         
         print("hello sensors")
         
@@ -689,9 +690,9 @@ class HueManager: ObservableObject {
     func fetchGroups() {
         guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-//        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
+        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
         
-        let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/groupsconfig.json")!
+        // let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/groupsconfig.json")!
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
