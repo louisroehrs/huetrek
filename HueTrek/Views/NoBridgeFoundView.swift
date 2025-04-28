@@ -3,7 +3,7 @@
 //  HueTrek
 //
 //  Created by Louis Roehrs on 4/18/25.
-//  Copyright © 2025 Louis Roehrs. All rights reserved.
+//  Copyright 2025 Louis Roehrs. All rights reserved.
 //  
 
 import SwiftUI
@@ -22,6 +22,12 @@ struct NoBridgeFoundView: View {
                     .kerning(1.3)
                     .foregroundColor(Color(hex:0xFF0000))
                 
+                Text(error.localizedUppercase)
+                    .font(Font.custom("Okuda Bold", size: 24))
+                    .kerning(1.3)
+                    .foregroundColor(Color(hex:0xff0000))
+                Spacer()
+                
                 HStack(spacing: 6) {
                     Button(action: {
                         hueManager.error = nil
@@ -38,7 +44,6 @@ struct NoBridgeFoundView: View {
                             .background(Color(hex:0xFF9C00))
                             .cornerRadius(0)
                     }
-                    
                     Button(action: {
                         hueManager.error = nil
                         hueManager.showingBridgeSelector = true
@@ -53,15 +58,13 @@ struct NoBridgeFoundView: View {
                             .padding(.vertical, 10)
                             .background(Color(hex:0xFF9C00))
                             .cornerRadius(0)
-
                     }
                 }
                 Spacer()
             }
             .frame(maxWidth: .infinity)
             .background(Color.black)
-
+            .accessibilityIdentifier("NoBridgeFoundView")
         }
     }
 }
-

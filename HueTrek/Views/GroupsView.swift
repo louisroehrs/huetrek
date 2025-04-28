@@ -22,7 +22,7 @@ struct GroupsView: View {
                         GroupRowView(group: group)
                             .listRowBackground(Color.clear)
                             .background(Color.clear)
-                            .padding(0)
+                            .padding(3)
                     }
                 }
                 .background(.clear)

@@ -15,7 +15,7 @@ struct KeyValueIndicator: View {
         HStack(spacing:4) {
             Rectangle()
                 .fill(Color.black)
-                .frame(width: 80, height:30)
+                .frame(width: 90, height:30)
                 .overlay(alignment: .trailing) {
                     Text(value)
                         .font(Font.custom("Okuda", size: 42))
@@ -37,5 +37,6 @@ struct KeyValueIndicator: View {
         }
         .frame(maxWidth: .infinity, maxHeight: 30)
         .padding(0)
+        .accessibilityIdentifier("KeyValueIndicator")
     }
 }

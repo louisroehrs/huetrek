@@ -77,6 +77,13 @@ struct BridgeView: View {
                                 )
                             }
                     }
+                    .onTapGesture {
+                        hueManager.playSound(sound: "panelswitch")
+                        hueManager.fetchLights()
+                        withAnimation(Animation.easeInOut(duration: 0.5),
+                                    { hueManager.currentTab = .lights}
+                        )
+                    }
                 
                 Rectangle()
                     .fill(Color(hex:0x3399ff))
@@ -98,6 +105,13 @@ struct BridgeView: View {
                             }
                         
                     }
+                    .onTapGesture {
+                        hueManager.playSound(sound: "panelswitch")
+                        hueManager.fetchGroups()
+                        withAnimation(Animation.easeInOut(duration: 0.5),
+                                      { hueManager.currentTab = .groups}
+                        )
+                    }
                 
                 Rectangle()
                     .fill(Color(hex:0x9c9cff))
@@ -110,14 +124,13 @@ struct BridgeView: View {
                             .padding(.bottom, -4)
                             .padding(.trailing, 2)
                             .layoutPriority(1)
-                            .onTapGesture {
-                                hueManager.playSound(sound: "panelswitch")
-                                hueManager.fetchSensors()
-                                withAnimation(Animation.easeInOut(duration: 0.5),
-                                              { hueManager.currentTab = .sensors}
-                                )
-                            }
-                        
+                    }
+                    .onTapGesture {
+                        hueManager.playSound(sound: "panelswitch")
+                        hueManager.fetchSensors()
+                        withAnimation(Animation.easeInOut(duration: 0.5),
+                                      { hueManager.currentTab = .sensors}
+                        )
                     }
                 
                 Rectangle(radius: hueManager.ui.footerHeight)
@@ -126,6 +139,7 @@ struct BridgeView: View {
             }
         }
         .padding()
+        .padding(.trailing, 4)
         .background(Color.black.edgesIgnoringSafeArea(.all))
     }
 }

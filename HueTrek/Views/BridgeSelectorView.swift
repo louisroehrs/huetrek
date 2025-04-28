@@ -1,4 +1,3 @@
-
 //
 //  BridgeSelectorView.swift
 //  HueTrek
@@ -111,6 +110,7 @@ struct BridgeSelectorView: View {
             .background(Color.black.edgesIgnoringSafeArea(.all)) // Set the NavigationView background
         }
         .preferredColorScheme(.dark)
+        .accessibilityIdentifier("BridgeSelectorView")
     }
 
 }
@@ -198,5 +198,3 @@ struct BridgeRowItem: View {
     BridgeSelectorView()
         .environmentObject(HueManager.preview)
 }
-
-

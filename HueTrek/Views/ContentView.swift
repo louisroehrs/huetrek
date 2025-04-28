@@ -136,7 +136,7 @@ struct ContentView: View {
     @State private var editedBridgeName = ""
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Group {
                 if hueManager.isAddingNewBridge {
                     if hueManager.bridgeIP == nil {
@@ -205,8 +205,10 @@ struct ContentView: View {
                             .frame(minWidth:40)
                             .padding(0)
                     }
-                    .frame(maxHeight:30)
+                    .frame(maxWidth:.infinity,maxHeight:30)
+                    .padding(0)
                 }
+                
             }
             .sheet(isPresented: $hueManager.showingBridgeSelector) {
                 BridgeSelectorView()

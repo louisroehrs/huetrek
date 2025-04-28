@@ -246,6 +246,7 @@ class HueManager: ObservableObject {
     }
     
     func fetchCurrentTab() {
+        
         switch self.currentTab {
         case .lights:
             self.fetchLights()
@@ -595,9 +596,7 @@ class HueManager: ObservableObject {
         request.httpBody = try? JSONEncoder().encode(["on": !light.state.on!])
         
         URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
-            DispatchQueue.main.async {
-                self?.fetchLights()
-            }
+            self?.fetchLights()
         }.resume()
     }
     
@@ -610,9 +609,7 @@ class HueManager: ObservableObject {
         request.httpBody = try? JSONEncoder().encode(["bri": brightness])
         
         URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
-            DispatchQueue.main.async {
-                self?.fetchLights()
-            }
+            self?.fetchLights()
         }.resume()
     }
     
@@ -622,9 +619,7 @@ class HueManager: ObservableObject {
         let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/sensors")!
         
         // let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/sensorsconfig.json")!
-        
-        print("hello sensors")
-        
+                
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
@@ -765,9 +760,7 @@ class HueManager: ObservableObject {
         request.httpBody = try? JSONEncoder().encode(["on": !group.action.on])
         
         URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
-            DispatchQueue.main.async {
-                self?.fetchGroups()
-            }
+            self?.fetchGroups()
         }.resume()
     }
     
@@ -813,9 +806,7 @@ class HueManager: ObservableObject {
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         
         URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
-            DispatchQueue.main.async {
-                self?.fetchGroups()
-            }
+            self?.fetchGroups()
         }.resume()
     }
 }
