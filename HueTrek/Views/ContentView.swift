@@ -205,10 +205,9 @@ struct ContentView: View {
                             .frame(minWidth:40)
                             .padding(0)
                     }
-                    .frame(maxWidth:.infinity,maxHeight:30)
+                    .frame(maxWidth:.infinity, maxHeight:30)
                     .padding(0)
-                }
-                
+                }                
             }
             .sheet(isPresented: $hueManager.showingBridgeSelector) {
                 BridgeSelectorView()

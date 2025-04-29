@@ -36,10 +36,8 @@ struct HueTrekApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .environmentObject(hueManager)
         }
     }
 }
-
-

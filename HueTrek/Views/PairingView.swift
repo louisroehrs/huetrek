@@ -40,7 +40,7 @@ struct PairingView: View {
                             .multilineTextAlignment(.center)
                             .background(.clear)
                             .kerning(1.2)
-                            .lineLimit(nil) 
+                            .lineLimit(nil)
                             .fixedSize(horizontal: false, vertical: true)
                             .textCase(.uppercase)
                             .frame(maxWidth:.infinity, maxHeight:100)
@@ -129,11 +129,12 @@ struct PairingView: View {
                             .kerning(1.2)
                             .foregroundColor(.black)
                             .layoutPriority(1)
-                            .onTapGesture {
-                                hueManager.playSound(sound: "input_failed_clean")
-                                hueManager.isDiscovering = false
-                                hueManager.isAddingNewBridge = false
-                            }
+                        
+                    }
+                    .onTapGesture {
+                        hueManager.playSound(sound: "input_failed_clean")
+                        hueManager.isDiscovering = false
+                        hueManager.isAddingNewBridge = false
                     }
                 
                 Rectangle(radius: hueManager.ui.footerHeight)
