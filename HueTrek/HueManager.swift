@@ -9,6 +9,11 @@ import Foundation
 import Network
 import SwiftUI
 import AVFoundation // Import AVFoundation for audio playback
+import os
+
+let logger = Logger(subsystem: "com.yourcompany.yourapp", category: "networking")
+
+let DEMO_IP = "DEMO IP"
 
 enum ViewTab {
     case lights
@@ -16,12 +21,85 @@ enum ViewTab {
     case groups
 }
 
+struct Light: Identifiable, Codable {
+    let id: String
+    var name: String
+    var state: State
+    var isColorPickerVisible: Bool = false
+    var selectedColor: Color?
+    
+    private enum CodingKeys: String, CodingKey {
+        case id, name, state
+    }
+    
+    struct State: Codable {
+        var on: Bool?
+        var bri: Int?
+        var hue: Int?
+        var sat: Int?
+        var reachable: Bool
+    }
+    
+}
+
+struct LightGroup: Identifiable, Codable {
+    let id: String
+    var name: String
+    var lights: [String]
+    var type: String
+    var state: GroupState
+    var action: GroupAction
+    var `class`: String
+    
+    struct GroupState: Codable {
+        var all_on: Bool
+        var any_on: Bool
+    }
+    
+    struct GroupAction: Codable {
+        var on: Bool
+        var bri: Int
+        var hue: Int
+        var sat: Int
+        var effect: String?
+        var xy: [Double]?
+        var ct: Int?
+        var alert: String?
+        var colormode: String?
+    }
+}
+
+struct Sensor: Identifiable, Codable {
+    let id: String
+    var name: String
+    var type: String
+    var manufacturername: String
+    var productname: String
+    var state: SensorState
+    var config: SensorConfig
+    
+    struct SensorState: Codable {
+        var rotaryevent: Int?
+        var expectedrotation: Int?
+        var expectedeventduration: Int?
+        var lastupdated: String?
+    }
+    
+    struct SensorConfig: Codable {
+        var on: Bool
+        var battery: Int
+        var reachable: Bool
+    }
+}
 
 struct BridgeConfiguration: Codable, Identifiable {
     let id: UUID
     var name: String
     var bridgeIP: String
     var apiKey: String
+    var lights: [Light] = []
+    var groups: [LightGroup] = []
+    var sensors: [Sensor] = []
     
     init(name: String, bridgeIP: String, apiKey: String) {
         self.id = UUID()
@@ -77,20 +155,12 @@ class HueManager: ObservableObject {
         didSet {
             if let config = currentBridgeConfig {
                 UserDefaults.standard.set(config.id.uuidString, forKey: "currentBridgeId")
-                bridgeIP = config.bridgeIP
-                apiKey = config.apiKey
-                fetchCurrentTab()
-            } else {
-                bridgeIP = nil
-                apiKey = nil
-                lights = []
+            //    fetchCurrentTab()
             }
         }
     }
-    
-    @Published var bridgeIP: String?
-    @Published var apiKey: String?
-    @Published var lights: [Light] = []
+
+    @Published var bridgeIP: String? = DEMO_IP    // @Published var apiKey: String?
     @Published var isDiscovering = false
     @Published var noDiscoveryAttempts = true
     @Published var error: String?
@@ -98,6 +168,7 @@ class HueManager: ObservableObject {
     @Published var newBridgeAdded = false
     @Published var showingBridgeSelector = false
     @Published var currentTab: ViewTab = .lights
+    @Published var tabClicked: Bool = true
     
     @Published var sensors: [Sensor] = []
     
@@ -113,80 +184,13 @@ class HueManager: ObservableObject {
         itemFontSize:32
     )
     
-    struct Group: Identifiable, Codable {
-        let id: String
-        var name: String
-        var lights: [String]
-        var type: String
-        var state: GroupState
-        var action: GroupAction
-        var `class`: String
+    private let demoBridgeConfig:BridgeConfiguration = BridgeConfiguration (
+        name: "Demo Bridge",
+        bridgeIP: DEMO_IP,
+        apiKey: "Demo ApiKey"
+    )
         
-        struct GroupState: Codable {
-            var all_on: Bool
-            var any_on: Bool
-        }
-        
-        struct GroupAction: Codable {
-            var on: Bool
-            var bri: Int
-            var hue: Int
-            var sat: Int
-            var effect: String?
-            var xy: [Double]?
-            var ct: Int?
-            var alert: String?
-            var colormode: String?
-        }
-    }
-    
-    @Published var groups: [Group] = []
-    
     private var audioPlayer: AVAudioPlayer?
-    
-    struct Light: Identifiable, Codable {
-        let id: String
-        var name: String
-        var state: State
-        var isColorPickerVisible: Bool = false
-        var selectedColor: Color?
-        
-        private enum CodingKeys: String, CodingKey {
-            case id, name, state
-        }
-        
-        struct State: Codable {
-            var on: Bool?
-            var bri: Int?
-            var hue: Int?
-            var sat: Int?
-            var reachable: Bool
-        }
-        
-    }
-    
-    struct Sensor: Identifiable, Codable {
-        let id: String
-        var name: String
-        var type: String
-        var manufacturername: String
-        var productname: String
-        var state: SensorState
-        var config: SensorConfig
-        
-        struct SensorState: Codable {
-            var rotaryevent: Int?
-            var expectedrotation: Int?
-            var expectedeventduration: Int?
-            var lastupdated: String?
-        }
-        
-        struct SensorConfig: Codable {
-            var on: Bool
-            var battery: Int
-            var reachable: Bool
-        }
-    }
     
     private enum HueError {
         case network(Error)
@@ -219,10 +223,13 @@ class HueManager: ObservableObject {
         #if DEBUG
         switch error {
         case .network(let err):
-            print("DEBUG: Network error occurred: \(err.localizedDescription)")
+            logger.warning("DEBUG: Network error occurred: \(err.localizedDescription)")
         case .decodingError(let err):
-            print("DEBUG: Decoding error occurred: \(err.localizedDescription)")
+            logger.warning("DEBUG: Decoding error occurred: \(err.localizedDescription)")
+        case .noData:
+            logger.warning("DEBUG: No data error occurred")
         default:
+            logger.error("Default error: \(error.userMessage)")
             break
         }
         #endif
@@ -241,7 +248,7 @@ class HueManager: ObservableObject {
            let config = bridgeConfigurations.first(where: { $0.id == uuid }) {
             self.currentBridgeConfig = config
         } else {
-            self.currentBridgeConfig = nil
+            self.currentBridgeConfig = demoBridgeConfig
         }
     }
     
@@ -263,8 +270,7 @@ class HueManager: ObservableObject {
         self.isAddingNewBridge = true
     }
     
-    func addNewBridgeConfiguration(name: String) {
-        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
+    func addNewBridgeConfiguration(name: String, bridgeIP: String, apiKey: String ) {
         let newConfig = BridgeConfiguration(name: name, bridgeIP: bridgeIP, apiKey: apiKey)
         bridgeConfigurations.append(newConfig)
         currentBridgeConfig = newConfig
@@ -282,7 +288,6 @@ class HueManager: ObservableObject {
     func switchToBridge(withId id: UUID) {
         if let config = bridgeConfigurations.first(where: { $0.id == id }) {
             currentBridgeConfig = config
-
         }
         fetchLights()
         fetchGroups()
@@ -317,7 +322,7 @@ class HueManager: ObservableObject {
                     self?.isDiscovering = false
                     self?.stopSound()
                 } else {
-                    print("db: fallback")
+                    logger.info("db: fallback")
                     // Fall back to UPnP discovery
                     self?.discoverBridgeUPnP()
                 }
@@ -359,6 +364,7 @@ class HueManager: ObservableObject {
                     self?.error = error.localizedDescription
                     self?.isDiscovering = false
                     self?.stopSound()
+                    print(error.localizedDescription)
                 }
             default:
                 print("default")
@@ -367,6 +373,7 @@ class HueManager: ObservableObject {
         }
         
         udpSocket.receiveMessage { [weak self] data, _, _, error in
+            print("received")
             if let data = data,
                let response = String(data: data, encoding: .utf8),
                response.contains("IpBridge") {
@@ -401,9 +408,9 @@ class HueManager: ObservableObject {
                 if let data = data,
                    let response = try? JSONDecoder().decode([BridgeResponse].self, from: data),
                    let success = response.first?.success {
-                    self?.apiKey = success.username
+                    let apiKey = success.username
                     // Add new bridge configuration with default name
-                    self?.addNewBridgeConfiguration(name: "Bridge \(self?.bridgeConfigurations.count ?? 0 + 1)")
+                    self?.addNewBridgeConfiguration(name: "Bridge \(self?.bridgeConfigurations.count ?? 0 + 1)", bridgeIP: bridgeIP, apiKey: apiKey)
                     self?.fetchLights()
                     self?.fetchGroups()
                     self?.fetchSensors()
@@ -433,11 +440,11 @@ class HueManager: ObservableObject {
         let (hue, saturation, brightness) = rgbToHsb(red: red, green: green, blue: blue)
         
         // Update the light's state
-        if let index = lights.firstIndex(where: { $0.id == light.id }) {
-            lights[index].selectedColor = color
-            lights[index].state.hue = Int(hue * 65535) // Convert to Hue scale
-            lights[index].state.sat = Int(saturation * 255) // Convert to Saturation scale
-            lights[index].state.bri = Int(brightness * 254) // Convert to Brightness scale
+        if let index = currentBridgeConfig?.lights.firstIndex(where: { $0.id == light.id }) {
+            currentBridgeConfig?.lights[index].selectedColor = color
+            currentBridgeConfig?.lights[index].state.hue = Int(hue * 65535) // Convert to Hue scale
+            currentBridgeConfig?.lights[index].state.sat = Int(saturation * 255) // Convert to Saturation scale
+            currentBridgeConfig?.lights[index].state.bri = Int(brightness * 254) // Convert to Brightness scale
         }
         
         // Send the update to the Hue bridge
@@ -445,7 +452,7 @@ class HueManager: ObservableObject {
     }
     
     private func sendColorUpdateToBridge(light: Light, hue: Int, saturation: Int, brightness: Int) {
-        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
+        guard let bridgeIP = self.currentBridgeConfig?.bridgeIP, let apiKey = self.currentBridgeConfig?.apiKey else { return }
         
         let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights/\(light.id)/state")!
         var request = URLRequest(url: url)
@@ -502,11 +509,19 @@ class HueManager: ObservableObject {
     }
     
     func fetchLights() {
-        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights")!
+        var url: URL
         
-        // let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/lightsconfig.json")!
+        if currentBridgeConfig?.apiKey == "Demo ApiKey" {
+            url = Bundle.main.url(forResource: "lightsmock", withExtension: "json")!
+        } else {
+            
+            guard let bridgeIP = currentBridgeConfig?.bridgeIP, let apiKey = currentBridgeConfig?.apiKey else {
+                return
+            }
+            
+            url = URL(string: "https://\(bridgeIP)/api/\(apiKey)/lights")!
+        }
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
@@ -522,7 +537,7 @@ class HueManager: ObservableObject {
                 
                 do {
                     if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
-                        self?.lights = json.compactMap { (key, value) -> Light? in
+                        self?.currentBridgeConfig?.lights = json.compactMap { (key, value) -> Light? in
                             guard let lightData = value as?[String: Any],
                                   let name = lightData["name"] as? String,
                                   let stateData = lightData["state"] as? [String: Any]
@@ -541,7 +556,7 @@ class HueManager: ObservableObject {
                             thisLight.selectedColor = self?.hueLightToSwiftColor(light: thisLight)
                             return thisLight
                         }
-                        self?.lights.sort { $0.name < $1.name }
+                        self?.currentBridgeConfig?.lights.sort { $0.name < $1.name }
                     }
                 } catch {
                     self?.handleError(.decodingError(error), showInUI: true)
@@ -577,48 +592,62 @@ class HueManager: ObservableObject {
     }
     
     func toggleColorPicker(_ light: Light) {
-        if let index = lights.firstIndex(where: { $0.id == light.id }) {
-            lights[index].isColorPickerVisible.toggle()
+        if let index = currentBridgeConfig?.lights.firstIndex(where: { $0.id == light.id }) {
+            currentBridgeConfig?.lights[index].isColorPickerVisible.toggle()
         }
     }
     func toggleLight(_ light: Light) {
-        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
-        print("Toggle light \(light.name)")  // Play sound
+        guard let bridgeIP = currentBridgeConfig?.bridgeIP, let apiKey = currentBridgeConfig?.apiKey else { return }
+        logger.info("Toggle light \(light.name)")  // Play sound
         if light.state.on! {
             playSound(sound: "lightOff")
         } else {
             playSound(sound: "lightOn")
         }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights/\(light.id)/state")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.httpBody = try? JSONEncoder().encode(["on": !light.state.on!])
-        
-        URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
-            self?.fetchLights()
-        }.resume()
+        if bridgeIP != DEMO_IP {
+            let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights/\(light.id)/state")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "PUT"
+            request.httpBody = try? JSONEncoder().encode(["on": !light.state.on!])
+            
+            URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
+                self?.fetchLights()
+            }.resume()
+        }
     }
     
     func setBrightness(_ brightness: Int, for light: Light) {
-        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
+        guard let bridgeIP = currentBridgeConfig?.bridgeIP, let apiKey = currentBridgeConfig?.apiKey else { return }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights/\(light.id)/state")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.httpBody = try? JSONEncoder().encode(["bri": brightness])
         
-        URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
-            self?.fetchLights()
-        }.resume()
+        if bridgeIP != DEMO_IP {
+            
+            let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights/\(light.id)/state")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "PUT"
+            request.httpBody = try? JSONEncoder().encode(["bri": brightness])
+            
+            URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
+                self?.fetchLights()
+            }.resume()
+        }
     }
     
+    
     func fetchSensors() {
-        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/sensors")!
+        var url: URL
         
-        // let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/sensorsconfig.json")!
+        if currentBridgeConfig?.bridgeIP == DEMO_IP {
+            url = Bundle.main.url(forResource: "sensorsmock", withExtension: "json")!
+        } else {
+            guard let bridgeIP = currentBridgeConfig?.bridgeIP, let apiKey = currentBridgeConfig?.apiKey else {
+                return
+            }
+            url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/sensors")!
+        }
+        
                 
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
@@ -683,11 +712,19 @@ class HueManager: ObservableObject {
     }
     
     func fetchGroups() {
-        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups")!
-        
-        // let url = URL(string: "https://raw.githubusercontent.com/louisroehrs/Hue/refs/heads/main/groupsconfig.json")!
+        var url: URL
+                
+        if currentBridgeConfig?.bridgeIP == DEMO_IP {
+            url = Bundle.main.url(forResource: "groupsmock", withExtension: "json")!
+        } else {
+            
+            guard let bridgeIP = currentBridgeConfig?.bridgeIP, let apiKey = currentBridgeConfig?.apiKey else {
+                return
+            }
+            
+            url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/sensors")!
+        }
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
@@ -703,7 +740,7 @@ class HueManager: ObservableObject {
                 
                 do {
                     if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
-                        self?.groups = json.compactMap { (key, value) -> Group? in
+                        self?.currentBridgeConfig?.groups = json.compactMap { (key, value) -> LightGroup? in
                             guard let groupData = value as? [String: Any],
                                   let name = groupData["name"] as? String,
                                   let lights = groupData["lights"] as? [String],
@@ -714,12 +751,12 @@ class HueManager: ObservableObject {
                                 return nil
                             }
                             
-                            let state = Group.GroupState(
+                            let state = LightGroup.GroupState(
                                 all_on: stateData["all_on"] as? Bool ?? false,
                                 any_on: stateData["any_on"] as? Bool ?? false
                             )
                             
-                            let action = Group.GroupAction(
+                            let action = LightGroup.GroupAction(
                                 on: actionData["on"] as? Bool ?? false,
                                 bri: actionData["bri"] as? Int ?? 0,
                                 hue: actionData["hue"] as? Int ?? 0,
@@ -731,7 +768,7 @@ class HueManager: ObservableObject {
                                 colormode: actionData["colormode"] as? String
                             )
                             
-                            return Group(
+                            return LightGroup(
                                 id: key,
                                 name: name,
                                 lights: lights,
@@ -741,7 +778,7 @@ class HueManager: ObservableObject {
                                 class: className
                             )
                         }
-                        self?.groups.sort { $0.name < $1.name }
+                        self?.currentBridgeConfig?.groups.sort { $0.name < $1.name }
                         self?.error = nil
                     }
                 } catch {
@@ -751,63 +788,71 @@ class HueManager: ObservableObject {
         }.resume()
     }
     
-    func toggleGroup(_ group: Group) {
-        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
+    func toggleGroup(_ group: LightGroup) {
+        guard let bridgeIP = currentBridgeConfig?.bridgeIP, let apiKey = currentBridgeConfig?.apiKey else { return }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups/\(group.id)/action")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.httpBody = try? JSONEncoder().encode(["on": !group.action.on])
-        
-        URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
-            self?.fetchGroups()
-        }.resume()
-    }
-    
-    func setBrightness(_ brightness: Int, for group: Group) {
-        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
-        
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups/\(group.id)/action")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.httpBody = try? JSONEncoder().encode(["bri": brightness])
-        
-        var myGroup = self.groups.first(where: {$0.id == group.id})
-        let myGroupIndex = self.groups.firstIndex(where: {$0.id == group.id})
-        
-        myGroup!.action.bri = brightness
-        
-        self.groups[myGroupIndex!] = myGroup!
-        
-        
-        URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
-            DispatchQueue.main.async {
+        if bridgeIP != DEMO_IP {
+            
+            let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups/\(group.id)/action")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "PUT"
+            request.httpBody = try? JSONEncoder().encode(["on": !group.action.on])
+            
+            URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
                 self?.fetchGroups()
-            }
-        }.resume()
-        
-        
+            }.resume()
+        }
     }
     
-    func updateGroupColor(_ group: Group, color: Color) {
+    func setBrightness(_ brightness: Int, for group: LightGroup) {
+        guard let bridgeIP = currentBridgeConfig?.bridgeIP, let apiKey = currentBridgeConfig?.apiKey else { return }
+        
+        if bridgeIP != DEMO_IP {
+            
+            let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups/\(group.id)/action")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "PUT"
+            request.httpBody = try? JSONEncoder().encode(["bri": brightness])
+            
+            var myGroup = currentBridgeConfig?.groups.first(where: {$0.id == group.id})
+            let myGroupIndex = currentBridgeConfig?.groups.firstIndex(where: {$0.id == group.id})
+            
+            myGroup!.action.bri = brightness
+            
+            self.currentBridgeConfig?.groups[myGroupIndex!] = myGroup!
+            
+            
+            URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
+                DispatchQueue.main.async {
+                    self?.fetchGroups()
+                }
+            }.resume()
+            
+        }
+    }
+    
+    func updateGroupColor(_ group: LightGroup, color: Color) {
         let components = color.cgColor?.components ?? [0, 0, 0, 1]
         let (hue, saturation, brightness) = rgbToHsb(red: components[0], green: components[1], blue: components[2])
         
-        guard let bridgeIP = bridgeIP, let apiKey = apiKey else { return }
+        guard let bridgeIP = currentBridgeConfig?.bridgeIP, let apiKey = currentBridgeConfig?.apiKey else { return }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups/\(group.id)/action")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        let body: [String: Any] = [
-            "hue": Int(hue * 65535),
-            "sat": Int(saturation * 255),
-            "bri": Int(brightness * 254)
-        ]
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-        
-        URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
-            self?.fetchGroups()
-        }.resume()
+        if bridgeIP != DEMO_IP {
+            
+            let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/groups/\(group.id)/action")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "PUT"
+            let body: [String: Any] = [
+                "hue": Int(hue * 65535),
+                "sat": Int(saturation * 255),
+                "bri": Int(brightness * 254)
+            ]
+            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+            
+            URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
+                self?.fetchGroups()
+            }.resume()
+        }
     }
 }
 
@@ -848,7 +893,3 @@ private struct BridgeResponse: Codable {
     }
 }
 
-private struct LightResponse: Codable {
-    let name: String
-    let state: HueManager.Light.State
-} 

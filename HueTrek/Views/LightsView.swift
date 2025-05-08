@@ -17,8 +17,16 @@ struct LightsView: View {
                 NoBridgeFoundView(repeatAction: hueManager.fetchLights)
             } else {
                 
+                if hueManager.currentBridgeConfig!.bridgeIP == DEMO_IP {
+                    Text("This is demo mode.  Click 'Demo Bridge' above to add your bridge.")
+                        .textCase(.uppercase)
+                        .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
+                        .foregroundColor(Color.yellow)
+                        .padding(10)
+                }
+                
                 List {
-                    ForEach(hueManager.lights) { light in
+                    ForEach(hueManager.currentBridgeConfig!.lights) { light in
                         LightRowView(light: light)
                             .id(light.id)
                             .listRowBackground(Color.black)
@@ -33,6 +41,13 @@ struct LightsView: View {
                     hueManager.fetchLights()
                 }
                 
+                if hueManager.currentBridgeConfig!.bridgeIP == DEMO_IP {
+                    Text("Select Lights, Groups/Rooms, or Sensors below.")
+                        .textCase(.uppercase)
+                        .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
+                        .foregroundColor(Color.yellow)
+                        .padding(10)
+                }
             }
         }
         .background(Color(hex: 0x000000))
@@ -50,12 +65,11 @@ struct LightsView: View {
 
 struct LightRowView: View {
     @EnvironmentObject private var hueManager: HueManager
-    var light: HueManager.Light
+    var light: Light
     
     var body: some View {
         VStack {
             HStack(spacing: 5) {
-                
                 Text(light.name)
                     .textCase(.uppercase)
                     .offset(x:10,y:5)
@@ -122,5 +136,5 @@ struct LightRowView: View {
         .background(Color.black)
         .foregroundColor(Color.black)
     }
-    
 }
+

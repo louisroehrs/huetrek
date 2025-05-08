@@ -15,7 +15,6 @@ struct HueTrekTests {
     
     @Test func testHueManagerInitialization() async throws {
         let manager = HueManager()
-        #expect(manager.lights.isEmpty)
         #expect(manager.currentTab == .lights)
         #expect(manager.bridgeConfigurations.isEmpty)
     }
@@ -62,8 +61,8 @@ struct HueTrekTests {
     }
     
     @Test func testGroupStructure() async throws {
-        let groupState = HueManager.Group.GroupState(all_on: true, any_on: true)
-        let groupAction = HueManager.Group.GroupAction(
+        let groupState = LightGroup.GroupState(all_on: true, any_on: true)
+        let groupAction = LightGroup.GroupAction(
             on: true,
             bri: 254,
             hue: 0,
@@ -75,7 +74,7 @@ struct HueTrekTests {
             colormode: nil
         )
         
-        let group = HueManager.Group(
+        let group = LightGroup(
             id: "1",
             name: "Living Room",
             lights: ["1", "2", "3"],

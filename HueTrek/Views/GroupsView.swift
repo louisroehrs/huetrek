@@ -18,7 +18,7 @@ struct GroupsView: View {
                 NoBridgeFoundView(repeatAction: hueManager.fetchGroups)
             } else {
                 List {
-                    ForEach(hueManager.groups) { group in
+                    ForEach(hueManager.currentBridgeConfig!.groups) { group in
                         GroupRowView(group: group)
                             .listRowBackground(Color.clear)
                             .background(Color.clear)
@@ -49,7 +49,7 @@ struct GroupsView: View {
 
 struct GroupRowView: View {
     @EnvironmentObject var hueManager: HueManager
-    let group: HueManager.Group
+    let group: LightGroup
     @State private var isColorPickerVisible = false
     @State private var selectedColor: Color?
     
@@ -115,10 +115,10 @@ struct GroupRowView: View {
                             ColorPicker(
                                 "",
                                 selection: Binding(
-                                    get: { selectedColor ?? hueManager.hueLightToSwiftColor(light: HueManager.Light(
+                                    get: { selectedColor ?? hueManager.hueLightToSwiftColor(light: Light(
                                         id: group.id,
                                         name: group.name,
-                                        state: HueManager.Light.State(
+                                        state: Light.State(
                                             on: group.action.on,
                                             bri: group.action.bri,
                                             hue: group.action.hue,
@@ -152,10 +152,10 @@ struct GroupRowView: View {
                             Double(group.action.bri)
                         },
                         set: { sliderValue in
-                            var myGroup = hueManager.groups.first(where: {$0.id == group.id} )
-                            let myGroupIndex = hueManager.groups.firstIndex(where: {$0.id == group.id} )
+                            var myGroup = hueManager.currentBridgeConfig!.groups.first(where: {$0.id == group.id} )
+                            let myGroupIndex = hueManager.currentBridgeConfig!.groups.firstIndex(where: {$0.id == group.id} )
                             myGroup!.action.bri = Int(sliderValue)
-                            hueManager.groups[myGroupIndex!] = myGroup!
+                            hueManager.currentBridgeConfig!.groups[myGroupIndex!] = myGroup!
                         }
                     ),
                                     group: group)

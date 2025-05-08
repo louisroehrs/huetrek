@@ -13,11 +13,10 @@ struct GroupSliderView: View {
     @EnvironmentObject private var hueManager: HueManager
 
     @Binding var sliderValue: Double
+    var group: LightGroup
     @State private var lastSentValue: Double = 0
     @State private var isDragging = false
     @State private var cancellable: AnyCancellable?
-    
-    let group: HueManager.Group
     
     var body: some View {
         VStack {

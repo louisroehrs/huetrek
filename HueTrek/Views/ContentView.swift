@@ -130,6 +130,25 @@ struct BottomLeftRoundedRectangle: Shape {
     }
 }
 
+struct ContentViewTitleText: View {
+    var text: String = "text"
+    
+    init(_ text: String) {
+            self.text = text
+    }
+
+    var body: some View {
+        Text(text)
+            .layoutPriority(1)
+            .font(Font.custom("Okuda Bold", size: 40))
+            .textCase(.uppercase)
+            .kerning(1.1)
+            .foregroundStyle(Color.blue)
+            .padding(.bottom, 1)
+    }
+}
+
+
 struct ContentView: View {
     @EnvironmentObject private var hueManager: HueManager
     @State private var isEditingBridgeName = false
@@ -160,19 +179,9 @@ struct ContentView: View {
                             .frame(width:50,height:30)
 
                         if hueManager.bridgeIP == nil {
-                            Text("SCANNING")
-                                .layoutPriority(1)
-                                .font(Font.custom("Okuda Bold", size: 40))
-                                .kerning(1.1)
-                                .foregroundStyle(Color.blue)
-                                .padding(.bottom, 1)
-                        } else if hueManager.apiKey == nil || hueManager.isAddingNewBridge {
-                            Text("PAIRING")
-                                .font(Font.custom("Okuda Bold", size: 40))
-                                .kerning(1.1)
-                                .foregroundStyle(Color.blue)
-                                .layoutPriority(1)
-                                .padding(.bottom, 1)
+                            ContentViewTitleText("SCANNING")
+                        } else if hueManager.isAddingNewBridge {
+                            ContentViewTitleText("PAIRING")
                         } else {
                             if isEditingBridgeName {
                                 TextField("", text: $editedBridgeName, onCommit: {
@@ -187,17 +196,11 @@ struct ContentView: View {
                                 .layoutPriority(1)
                                 .padding(.bottom, 1)
                             } else {
-                                Text(hueManager.currentBridgeConfig?.name ?? "BRIDGE")
-                                    .textCase(.uppercase)
-                                    .font(Font.custom("Okuda Bold", size: 40))
-                                    .kerning(1.1)
-                                    .foregroundStyle(Color.blue)
-                                    .padding(.bottom, 1)
+                                ContentViewTitleText(hueManager.currentBridgeConfig?.name ?? "BRIDGE")
                                     .onTapGesture {
                                         hueManager.playSound(sound: "colorpickerslideup")
                                         hueManager.showingBridgeSelector = true
                                     }
-                                    .layoutPriority(1)
                             }
                         }
                         Rectangle()

@@ -23,8 +23,8 @@ struct BridgeView: View {
             }
         }
         
-        VStack {
-            HStack(spacing:3) {
+        VStack(spacing:5) {
+            HStack(spacing:2) {
                 TopLeftRoundedRectangle(radius: hueManager.ui.headerHeight)
                     .fill(borderColor)
                     .frame(maxHeight: hueManager.ui.headerHeight)
@@ -54,7 +54,7 @@ struct BridgeView: View {
             }
 
             // Footer
-            HStack (spacing:6) {
+            HStack (spacing:5) {
                 BottomLeftRoundedRectangle(radius: hueManager.ui.footerHeight)
                     .fill(borderColor)
                     .frame(maxHeight: hueManager.ui.footerHeight)

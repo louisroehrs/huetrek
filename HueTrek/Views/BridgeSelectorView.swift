@@ -44,15 +44,26 @@ struct BridgeSelectorView: View {
                     
                 }
                 .frame(maxHeight: hueManager.ui.headerHeight)
+                .padding(0)
                 VStack {
-                    Text( "Press and hold name to rename or delete")
-                        .textCase(.uppercase)
-                        .font(Font.custom("Okuda Bold", size: 25))
-                        .kerning(1.3)
-                        .foregroundColor(Color(hex:0x6888FF))
-                        .layoutPriority(1)
-                        .padding()
-
+                    if hueManager.bridgeConfigurations.isEmpty {
+                        Text( "Press 'ADD' to add a Hue Bridge. The bridge needs to be on the same network as this device.")
+                            .textCase(.uppercase)
+                            .font(Font.custom("Okuda Bold", size: 30))
+                            .kerning(1.3)
+                            .foregroundColor(.yellow)
+                            .layoutPriority(1)
+                            .padding(15)
+                    } else {
+                        
+                        Text( "Press and hold name to rename or delete")
+                            .textCase(.uppercase)
+                            .font(Font.custom("Okuda Bold", size: 25))
+                            .kerning(1.3)
+                            .foregroundColor(Color(hex:0x6888FF))
+                            .layoutPriority(1)
+                            .padding()
+                    }
                     List {
                         ForEach(hueManager.bridgeConfigurations) { config in
                             BridgeRowItem(config: config)
@@ -63,6 +74,7 @@ struct BridgeSelectorView: View {
                     .background(Color.black)
                     .navigationBarTitleDisplayMode(.inline)
                 }
+                .padding(0)
                 .overlay(
                     Rectangle()
                         .frame(width: 12)
@@ -106,6 +118,7 @@ struct BridgeSelectorView: View {
                         .fill(Color(hex:0xFF9C00))
                         .frame(width: 40, height: hueManager.ui.footerHeight)
                 }
+                .padding(0)
             }
             .background(Color.black.edgesIgnoringSafeArea(.all)) // Set the NavigationView background
         }

@@ -27,7 +27,8 @@ struct KeyValueIndicator: View {
                 .frame(maxWidth:.infinity)
                 .overlay(alignment: .leading) {
                     Text(key)
-                        .font(Font.custom("Okuda", size: 20))
+                        .font(Font.custom("Okuda", size: 22))
+                        .kerning(1.2)
                         .textCase(.uppercase)
                         .offset(x:0,y:3)
                         .foregroundColor(.black)

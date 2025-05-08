@@ -44,7 +44,7 @@ struct SensorsView: View {
 }
 
 struct SensorRowView: View {
-    let sensor: HueManager.Sensor
+    let sensor: Sensor
     
     func batteryToSFSymbol(_ batteryPercent: Int) -> String {
         if batteryPercent>90 { return "battery.100" }

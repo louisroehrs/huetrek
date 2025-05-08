@@ -36,7 +36,7 @@ struct DiscoveryView: View {
                     Color.clear
                     if hueManager.isDiscovering {
                         Text("Searching for Hue Bridge...")
-                            .font(Font.custom("Okuda", size: 20))
+                            .font(Font.custom("Okuda", size: 30))
                             .foregroundColor(.blue)
                             .padding()
                             .textCase(.uppercase)
@@ -60,6 +60,7 @@ struct DiscoveryView: View {
                                 .padding(0)
                         }
                         HStack(spacing:6) {
+                            
                             Rectangle()
                                 .fill(Color(hex:0x9c9cff))
                                 .frame(height:60)
@@ -68,9 +69,11 @@ struct DiscoveryView: View {
                                 }
                                 .overlay (alignment: .bottomTrailing){
                                     Text("SEARCH FOR BRIDGE")
-                                        .font(Font.custom("Okuda Bold", size: 26))
+                                        .font(Font.custom("Okuda Bold", size: 30))
+                                        .kerning(1.3)
                                         .foregroundColor(.black)
                                         .layoutPriority(1)
+                                        .padding(3)
                                 }
                             
                             RightRoundedRectangle(radius:30)
