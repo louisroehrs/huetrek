@@ -74,7 +74,7 @@ struct BridgeSelectorView: View {
 
                         Image(systemName: "arrow.turn.right.down")
                             .foregroundColor(Color.yellow)
-                            .font(.system(size: 30))
+                            .font(.system(size: 20))
                             .padding(0)
                         Spacer()
                     }
