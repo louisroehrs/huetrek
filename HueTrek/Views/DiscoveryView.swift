@@ -36,11 +36,11 @@ struct DiscoveryView: View {
             VStack {
                 VStack(spacing: 40) {
                     Color.clear
-                    Text( "Make sure the bridge is on, it's three blue lights are lit, and connected to the same network as this device.")
+                    Text( "Make sure the hue bridge is on, it's three blue lights are lit, and connected to the same network as this device.")
                         .textCase(.uppercase)
                         .font(Font.custom("Okuda Bold", size: 30))
                         .kerning(1.3)
-                        .lineLimit(6)
+                        .lineLimit(7)
                         .fixedSize(horizontal: false, vertical: true)
                         .foregroundColor(.yellow)
                         .layoutPriority(1)

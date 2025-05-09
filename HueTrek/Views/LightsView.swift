@@ -16,17 +16,44 @@ struct LightsView: View {
             if let error = hueManager.error {
                 NoBridgeFoundView(repeatAction: hueManager.fetchLights)
             } else {
-                HStack {
-                    if hueManager.currentBridgeConfig!.bridgeIP == DEMO_IP {
-                        Image(systemName: "arrow.turn.left.up")
-                            .foregroundColor(Color.yellow)
-                            .font(.system(size: 30))
-                            .padding(0)
-                        Text("Click 'Demo Bridge' above to add your bridge.")
-                            .textCase(.uppercase)
-                            .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
-                            .foregroundColor(Color.yellow)
-                            .padding(10)
+                if hueManager.currentBridgeConfig!.bridgeIP == DEMO_IP {
+                    VStack{
+                        HStack {
+                            
+                            Image(systemName: "arrow.turn.left.up")
+                                .foregroundColor(Color.yellow)
+                                .font(.system(size: 30))
+                                .padding(0)
+                            Text("Tap 'Demo Bridge' above to add your bridge.")
+                                .textCase(.uppercase)
+                                .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
+                                .foregroundColor(Color.yellow)
+                                .padding(10)
+                        }
+                        
+                        HStack {
+                            Image(systemName: "arrow.turn.left.down")
+                                .foregroundColor(Color.yellow)
+                                .font(.system(size: 20))
+                                .padding(0)
+                            Text("Tap a light name to toggle it.")
+                                .textCase(.uppercase)
+                                .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
+                                .foregroundColor(Color.yellow)
+                        }
+                        .padding(.leading, 20)
+                        HStack{
+                            Text("Tap a palette to change color.")
+                                .textCase(.uppercase)
+                                .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
+                                .foregroundColor(Color.yellow)
+                                .padding(10)
+                            Image(systemName: "arrow.turn.right.down")
+                                .foregroundColor(Color.yellow)
+                                .font(.system(size: 20))
+                                .padding(0)
+                        }
+                        .padding(.leading, 20)
                     }
                 }
                 List {
