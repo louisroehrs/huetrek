@@ -9,6 +9,8 @@ import SwiftUI
 
 struct DiscoveryView: View {
     @EnvironmentObject var hueManager: HueManager
+    @State private var glowing = false
+
 
     var body: some View {
         VStack(spacing:4) {
@@ -34,22 +36,39 @@ struct DiscoveryView: View {
             VStack {
                 VStack(spacing: 40) {
                     Color.clear
-                    if hueManager.isDiscovering {
+                    Text( "Make sure the bridge is on, it's three blue lights are lit, and connected to the same network as this device.")
+                        .textCase(.uppercase)
+                        .font(Font.custom("Okuda Bold", size: 30))
+                        .kerning(1.3)
+                        .lineLimit(6)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .foregroundColor(.yellow)
+                        .layoutPriority(1)
+                        .padding()
+
+                    
+                    if hueManager.addBridgeState == .scanning {
                         Text("Searching for Hue Bridge...")
                             .font(Font.custom("Okuda", size: 30))
-                            .foregroundColor(.blue)
+                            .foregroundColor(.blue.opacity(glowing ? 1.0 : 0.2))
                             .padding()
                             .textCase(.uppercase)
                             .frame(maxWidth: .infinity)
                             .border(Color.blue)
                             .cornerRadius(20)
                             .padding(0)
+                            .onAppear {
+                                withAnimation(Animation.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
+                                    glowing = true
+                                }
+                                hueManager.playSound(sound: "tos_bridgescanner")
+                            }
                         
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle())
 
                     } else {
-                        if !hueManager.noDiscoveryAttempts {
+                        if hueManager.addBridgeState == .noBridgeFound {
                             Text("NO HUE BRIDGE FOUND")
                                 .font(Font.custom("Okuda Bold", size: 30))
                                 .foregroundColor(.yellow)
@@ -104,19 +123,40 @@ struct DiscoveryView: View {
                 BottomLeftRoundedRectangle(radius: hueManager.ui.footerHeight)
                     .fill(Color(hex:0xCCE0F7))
                     .frame(maxHeight: hueManager.ui.footerHeight)
-                    .layoutPriority(1)
                 
-                Text("ABORT")
-                    .font(Font.custom("Okuda", size: hueManager.ui.footerLabelFontSize))
-                    .kerning(1.2)
-                    .foregroundColor(.yellow)
-                    .frame(height: hueManager.ui.footerButtonFontSize)
-                    .padding(.bottom, 2)
-                    .layoutPriority(1)
+                Rectangle()
+                    .fill(Color(.green))
+                    .frame(maxHeight:hueManager.ui.footerHeight)
+                    .overlay( alignment: .trailing) {
+                        Text("RETRY")
+                            .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))
+                            .kerning(1.1)
+                            .textCase(.uppercase)
+                            .foregroundColor(.black)
+                            .padding(.bottom, -4)
+                            .padding(.trailing, 1)
+                    }
+                    .onTapGesture {
+                        hueManager.playSound(sound: "tos_bridgescanner")
+                        hueManager.addBridgeState = .scanning
+                        hueManager.discoverBridge()
+                    }
+                
+                Rectangle()
+                    .fill(Color(.yellow))
+                    .frame(maxHeight:hueManager.ui.footerHeight)
+                    .overlay( alignment: .trailing) {
+                        Text("ABORT")
+                            .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))
+                            .kerning(1.1)
+                            .textCase(.uppercase)
+                            .foregroundColor(.black)
+                            .padding(.bottom, -4)
+                            .padding(.trailing, 1)
+                    }
                     .onTapGesture {
                         hueManager.playSound(sound: "input_failed_clean")
-                        hueManager.isDiscovering = false
-                        hueManager.isAddingNewBridge = false
+                        hueManager.addBridgeState = .notAddingABridge
                     }
                 
                 Rectangle(radius: hueManager.ui.footerHeight)

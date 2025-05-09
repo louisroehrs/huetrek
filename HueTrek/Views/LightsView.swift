@@ -16,15 +16,19 @@ struct LightsView: View {
             if let error = hueManager.error {
                 NoBridgeFoundView(repeatAction: hueManager.fetchLights)
             } else {
-                
-                if hueManager.currentBridgeConfig!.bridgeIP == DEMO_IP {
-                    Text("This is demo mode.  Click 'Demo Bridge' above to add your bridge.")
-                        .textCase(.uppercase)
-                        .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
-                        .foregroundColor(Color.yellow)
-                        .padding(10)
+                HStack {
+                    if hueManager.currentBridgeConfig!.bridgeIP == DEMO_IP {
+                        Image(systemName: "arrow.turn.left.up")
+                            .foregroundColor(Color.yellow)
+                            .font(.system(size: 30))
+                            .padding(0)
+                        Text("Click 'Demo Bridge' above to add your bridge.")
+                            .textCase(.uppercase)
+                            .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
+                            .foregroundColor(Color.yellow)
+                            .padding(10)
+                    }
                 }
-                
                 List {
                     ForEach(hueManager.currentBridgeConfig!.lights) { light in
                         LightRowView(light: light)
@@ -40,13 +44,20 @@ struct LightsView: View {
                 .refreshable {
                     hueManager.fetchLights()
                 }
+                .onAppear{ hueManager.fetchLights()}
                 
                 if hueManager.currentBridgeConfig!.bridgeIP == DEMO_IP {
-                    Text("Select Lights, Groups/Rooms, or Sensors below.")
-                        .textCase(.uppercase)
-                        .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
-                        .foregroundColor(Color.yellow)
-                        .padding(10)
+                    HStack {
+                        Text("Select Lights, Groups, or Sensors below.")
+                            .textCase(.uppercase)
+                            .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
+                            .foregroundColor(Color.yellow)
+                            .padding(10)
+                        Image(systemName: "arrow.turn.right.down")
+                            .foregroundColor(Color.yellow)
+                            .font(.system(size: 30))
+                            .padding(0)
+                    }
                 }
             }
         }

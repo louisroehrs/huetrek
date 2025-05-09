@@ -21,6 +21,14 @@ enum ViewTab {
     case groups
 }
 
+enum AddBridgeState {
+    case scanning
+    case pairing
+    case connected
+    case notAddingABridge
+    case noBridgeFound
+}
+
 struct Light: Identifiable, Codable {
     let id: String
     var name: String
@@ -155,17 +163,13 @@ class HueManager: ObservableObject {
         didSet {
             if let config = currentBridgeConfig {
                 UserDefaults.standard.set(config.id.uuidString, forKey: "currentBridgeId")
-            //    fetchCurrentTab()
             }
         }
     }
-
+    
     @Published var bridgeIP: String? = DEMO_IP    // @Published var apiKey: String?
-    @Published var isDiscovering = false
-    @Published var noDiscoveryAttempts = true
     @Published var error: String?
-    @Published var isAddingNewBridge = false
-    @Published var newBridgeAdded = false
+    @Published var addBridgeState: AddBridgeState = .notAddingABridge
     @Published var showingBridgeSelector = false
     @Published var currentTab: ViewTab = .lights
     @Published var tabClicked: Bool = true
@@ -189,7 +193,7 @@ class HueManager: ObservableObject {
         bridgeIP: DEMO_IP,
         apiKey: "Demo ApiKey"
     )
-        
+    
     private var audioPlayer: AVAudioPlayer?
     
     private enum HueError {
@@ -220,7 +224,7 @@ class HueManager: ObservableObject {
             }
         }
         // Network errors are silently handled unless explicitly requested to show in UI
-        #if DEBUG
+#if DEBUG
         switch error {
         case .network(let err):
             logger.warning("DEBUG: Network error occurred: \(err.localizedDescription)")
@@ -232,7 +236,7 @@ class HueManager: ObservableObject {
             logger.error("Default error: \(error.userMessage)")
             break
         }
-        #endif
+#endif
     }
     
     init() {
@@ -243,17 +247,19 @@ class HueManager: ObservableObject {
             self.bridgeConfigurations = []
         }
         
-        if let currentBridgeId = UserDefaults.standard.string(forKey: "currentBridgeId"),
-           let uuid = UUID(uuidString: currentBridgeId),
-           let config = bridgeConfigurations.first(where: { $0.id == uuid }) {
-            self.currentBridgeConfig = config
-        } else {
-            self.currentBridgeConfig = demoBridgeConfig
+        DispatchQueue.main.async {
+            if let currentBridgeId = UserDefaults.standard.string(forKey: "currentBridgeId"),
+               let uuid = UUID(uuidString: currentBridgeId),
+               let config = self.bridgeConfigurations.first(where: { $0.id == uuid }) {
+                self.currentBridgeConfig = config
+            } else {
+                self.currentBridgeConfig = self.demoBridgeConfig
+                self.bridgeConfigurations.append(self.demoBridgeConfig)
+            }
         }
     }
     
     func fetchCurrentTab() {
-        
         switch self.currentTab {
         case .lights:
             self.fetchLights()
@@ -267,13 +273,14 @@ class HueManager: ObservableObject {
     func addBridgeTapped() {
         self.discoverBridge()
         self.playSound(sound: "colorpickerslidedown")
-        self.isAddingNewBridge = true
+        self.addBridgeState = .scanning
     }
     
     func addNewBridgeConfiguration(name: String, bridgeIP: String, apiKey: String ) {
         let newConfig = BridgeConfiguration(name: name, bridgeIP: bridgeIP, apiKey: apiKey)
         bridgeConfigurations.append(newConfig)
         currentBridgeConfig = newConfig
+        self.addBridgeState = .connected
     }
     
     func updateBridgeName(_ newName: String) {
@@ -306,9 +313,7 @@ class HueManager: ObservableObject {
     
     func discoverBridge() {
         playSound(sound: "tos_bridgescanner")
-        isDiscovering = true
-        isAddingNewBridge = true
-        noDiscoveryAttempts = false
+        self.addBridgeState = .scanning
         error = nil
         
         // First try meethue.com discovery
@@ -319,7 +324,7 @@ class HueManager: ObservableObject {
                    let bridges = try? JSONDecoder().decode([BridgeDiscovery].self, from: data),
                    let bridge = bridges.first {
                     self?.bridgeIP = bridge.internalipaddress
-                    self?.isDiscovering = false
+                    self?.addBridgeState = .pairing
                     self?.stopSound()
                 } else {
                     logger.info("db: fallback")
@@ -334,14 +339,14 @@ class HueManager: ObservableObject {
         let ssdpAddress = "239.255.255.250"
         let ssdpPort: UInt16 = 1900
         
-        print("UPnP")
+        logger.info("UPnP")
         guard let udpSocket = try? NWConnection(
             to: NWEndpoint.hostPort(host: .init(ssdpAddress), port: .init(integerLiteral: ssdpPort)),
             using: .udp
         )
         else {
-            isDiscovering = false
-            print("Failed to create UDP socket")
+            addBridgeState = .noBridgeFound
+            logger.error("Failed to create UDP socket")
             return
         }
         
@@ -358,22 +363,22 @@ class HueManager: ObservableObject {
             switch state {
             case .ready:
                 udpSocket.send(content: searchMessage.data(using: .utf8), completion: .contentProcessed { _ in })
-                print("ready")
+                logger.info("sent a broadcast")
             case .failed(let error):
                 DispatchQueue.main.async {
                     self?.error = error.localizedDescription
-                    self?.isDiscovering = false
+                    self?.addBridgeState = .pairing
                     self?.stopSound()
-                    print(error.localizedDescription)
+                    logger.error("\(error.localizedDescription)")
                 }
             default:
-                print("default")
+                logger.info("discoverBridge UPnP default")
                 break
             }
         }
         
         udpSocket.receiveMessage { [weak self] data, _, _, error in
-            print("received")
+            logger.info("pinged by a bridge")
             if let data = data,
                let response = String(data: data, encoding: .utf8),
                response.contains("IpBridge") {
@@ -383,15 +388,13 @@ class HueManager: ObservableObject {
                    let url = URL(string: urlString),
                    let bridgeIP = url.host {
                     DispatchQueue.main.async {
-                        print("async")
                         self?.bridgeIP = bridgeIP
-                        self?.isDiscovering = false
+                        self?.addBridgeState = .pairing
                         self?.stopSound()
                     }
                 }
             }
         }
-        
         udpSocket.start(queue: .global())
     }
     
@@ -440,13 +443,15 @@ class HueManager: ObservableObject {
         let (hue, saturation, brightness) = rgbToHsb(red: red, green: green, blue: blue)
         
         // Update the light's state
-        if let index = currentBridgeConfig?.lights.firstIndex(where: { $0.id == light.id }) {
-            currentBridgeConfig?.lights[index].selectedColor = color
-            currentBridgeConfig?.lights[index].state.hue = Int(hue * 65535) // Convert to Hue scale
-            currentBridgeConfig?.lights[index].state.sat = Int(saturation * 255) // Convert to Saturation scale
-            currentBridgeConfig?.lights[index].state.bri = Int(brightness * 254) // Convert to Brightness scale
-        }
         
+        DispatchQueue.main.async {
+            if let index = self.currentBridgeConfig?.lights.firstIndex(where: { $0.id == light.id }) {
+                self.currentBridgeConfig?.lights[index].selectedColor = color
+                self.currentBridgeConfig?.lights[index].state.hue = Int(hue * 65535) // Convert to Hue scale
+                self.currentBridgeConfig?.lights[index].state.sat = Int(saturation * 255) // Convert to Saturation scale
+                self.currentBridgeConfig?.lights[index].state.bri = Int(brightness * 254) // Convert to Brightness scale
+            }
+        }
         // Send the update to the Hue bridge
         sendColorUpdateToBridge(light: light, hue: Int(hue * 65535), saturation: Int(saturation * 255), brightness: Int(brightness * 254))
     }
@@ -454,27 +459,29 @@ class HueManager: ObservableObject {
     private func sendColorUpdateToBridge(light: Light, hue: Int, saturation: Int, brightness: Int) {
         guard let bridgeIP = self.currentBridgeConfig?.bridgeIP, let apiKey = self.currentBridgeConfig?.apiKey else { return }
         
-        let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights/\(light.id)/state")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        let body: [String: Any] = [
-            "on": light.state.on as Any,
-            "hue": hue,
-            "sat": saturation,
-            "bri": brightness
-        ]
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-        
-        URLSession.shared.dataTask(with: request) { [weak self] _, _, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    self?.error = error.localizedDescription
-                    print("Error updating light color: \(error.localizedDescription)")
-                } else {
-                    print("Successfully updated light color for \(light.name)")
+        if bridgeIP != DEMO_IP {
+            let url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/lights/\(light.id)/state")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "PUT"
+            let body: [String: Any] = [
+                "on": light.state.on as Any,
+                "hue": hue,
+                "sat": saturation,
+                "bri": brightness
+            ]
+            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+            
+            URLSession.shared.dataTask(with: request) { [weak self] _, _, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        self?.error = error.localizedDescription
+                        print("Error updating light color: \(error.localizedDescription)")
+                    } else {
+                        print("Successfully updated light color for \(light.name)")
+                    }
                 }
-            }
-        }.resume()
+            }.resume()
+        }
     }
     
     // Helper function to convert RGB to HSB
@@ -551,7 +558,7 @@ class HueManager: ObservableObject {
                                 hue: stateData["hue"] as? Int ?? 0,
                                 sat: stateData["sat"] as? Int ?? 0,
                                 reachable: stateData["reachable"] as? Bool ?? false)
-                                         
+                            
                             var thisLight = Light(id: key, name: name, state: state)
                             thisLight.selectedColor = self?.hueLightToSwiftColor(light: thisLight)
                             return thisLight
@@ -596,6 +603,7 @@ class HueManager: ObservableObject {
             currentBridgeConfig?.lights[index].isColorPickerVisible.toggle()
         }
     }
+    
     func toggleLight(_ light: Light) {
         guard let bridgeIP = currentBridgeConfig?.bridgeIP, let apiKey = currentBridgeConfig?.apiKey else { return }
         logger.info("Toggle light \(light.name)")  // Play sound
@@ -614,6 +622,10 @@ class HueManager: ObservableObject {
             URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
                 self?.fetchLights()
             }.resume()
+        } else {
+            if let index = currentBridgeConfig?.lights.firstIndex(where: { $0.id == light.id }) {
+                currentBridgeConfig?.lights[index].state.on = !light.state.on!
+            }
         }
     }
     
@@ -648,7 +660,7 @@ class HueManager: ObservableObject {
             url = URL(string: "http://\(bridgeIP)/api/\(apiKey)/sensors")!
         }
         
-                
+        
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
@@ -714,7 +726,7 @@ class HueManager: ObservableObject {
     func fetchGroups() {
         
         var url: URL
-                
+        
         if currentBridgeConfig?.bridgeIP == DEMO_IP {
             url = Bundle.main.url(forResource: "groupsmock", withExtension: "json")!
         } else {
@@ -802,6 +814,12 @@ class HueManager: ObservableObject {
                 self?.fetchGroups()
             }.resume()
         }
+        else {
+            
+            if let index = currentBridgeConfig?.groups.firstIndex(where: { $0.id == group.id }) {
+                currentBridgeConfig?.groups[index].action.on = !group.action.on
+            }
+        }
     }
     
     func setBrightness(_ brightness: Int, for group: LightGroup) {
@@ -852,6 +870,14 @@ class HueManager: ObservableObject {
             URLSession.shared.dataTask(with: request) { [weak self] _, _, _ in
                 self?.fetchGroups()
             }.resume()
+        } else {
+            DispatchQueue.main.async {
+                if let index = self.currentBridgeConfig?.groups.firstIndex(where: { $0.id == group.id }) {
+                    self.currentBridgeConfig?.groups[index].action.hue = Int(hue * 65535)
+                    self.currentBridgeConfig?.groups[index].action.sat = Int(saturation * 255)
+                    self.currentBridgeConfig?.groups[index].action.bri = Int(brightness * 254)
+                }
+            }
         }
     }
 }

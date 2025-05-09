@@ -33,7 +33,7 @@ struct PairingView: View {
             VStack {
                 VStack(spacing: 50) {
                     HStack(spacing:8) {
-                        Text(hueManager.newBridgeAdded ? "New Bridge Added" : "Press the link button on your Hue Bridge")
+                        Text(hueManager.addBridgeState  == .connected ? "New Bridge Added" : "Press the link button on your Hue Bridge")
                             .font(Font.custom("Okuda Bold", size: 35))
                             .padding(10)
                             .foregroundColor(.green)
@@ -56,14 +56,13 @@ struct PairingView: View {
                     .padding(40)
                     
                     HStack(spacing: 6) {
-                        if hueManager.newBridgeAdded {
+                        if hueManager.addBridgeState == .connected {
                             Rectangle()
                                 .fill(Color(hex:0x9c9cff))
                                 .frame(height:60)
                                 .onTapGesture {
-                                    hueManager.playSound(sound: "continue");
-                                    hueManager.isAddingNewBridge = false;
-                                    hueManager.newBridgeAdded = false;
+                                    hueManager.playSound(sound: "continue")
+                                    hueManager.addBridgeState = .notAddingABridge
                                 }
                                 .overlay (alignment: .bottomTrailing){
                                     Text("CONTINUE")
@@ -80,7 +79,7 @@ struct PairingView: View {
                                 .onTapGesture {
                                     hueManager.playSound(sound: "processing3")
                                     hueManager.pairWithBridge {
-                                        hueManager.newBridgeAdded = true
+                                        hueManager.addBridgeState = .pairing
                                     }
                                 }
                                 .overlay (alignment: .bottomTrailing){
@@ -133,8 +132,7 @@ struct PairingView: View {
                     }
                     .onTapGesture {
                         hueManager.playSound(sound: "input_failed_clean")
-                        hueManager.isDiscovering = false
-                        hueManager.isAddingNewBridge = false
+                        hueManager.addBridgeState = .notAddingABridge
                     }
                 
                 Rectangle(radius: hueManager.ui.footerHeight)
