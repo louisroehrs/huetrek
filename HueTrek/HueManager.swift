@@ -22,6 +22,7 @@ enum ViewTab {
 }
 
 enum AddBridgeState {
+    case readyToScan
     case scanning
     case pairing
     case connected
@@ -271,9 +272,8 @@ class HueManager: ObservableObject {
     }
     
     func addBridgeTapped() {
-        self.discoverBridge()
         self.playSound(sound: "colorpickerslidedown")
-        self.addBridgeState = .scanning
+        self.addBridgeState = .readyToScan
     }
     
     func addNewBridgeConfiguration(name: String, bridgeIP: String, apiKey: String ) {

@@ -157,15 +157,14 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if hueManager.addBridgeState == .scanning {
-                    if (hueManager.bridgeIP == nil || hueManager.bridgeIP == DEMO_IP) {
-                        AnyView(DiscoveryView())
-                    } else {
-                        AnyView(PairingView())
-                    }
-                } else if hueManager.currentBridgeConfig == nil {
+                if hueManager.addBridgeState == .readyToScan ||
+                    hueManager.addBridgeState == .scanning {
                     AnyView(DiscoveryView())
-                } else {
+                }
+                else if hueManager.addBridgeState == .pairing {
+                    AnyView(PairingView())
+                }
+                else {
                     AnyView(BridgeView())
                 }
             }

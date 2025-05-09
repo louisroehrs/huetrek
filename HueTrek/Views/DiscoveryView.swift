@@ -36,15 +36,7 @@ struct DiscoveryView: View {
             VStack {
                 VStack(spacing: 40) {
                     Color.clear
-                    Text( "Make sure the hue bridge is on, it's three blue lights are lit, and connected to the same network as this device.")
-                        .textCase(.uppercase)
-                        .font(Font.custom("Okuda Bold", size: 30))
-                        .kerning(1.3)
-                        .lineLimit(7)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .foregroundColor(.yellow)
-                        .layoutPriority(1)
-                        .padding()
+                    
 
                     
                     if hueManager.addBridgeState == .scanning {
@@ -78,29 +70,40 @@ struct DiscoveryView: View {
                                 .cornerRadius(20)
                                 .padding(0)
                         }
-                        HStack(spacing:6) {
+                        VStack {
+                            Text( "Make sure the hue bridge is on, it's three blue lights are lit, and connected to the same network as this device.")
+                                .textCase(.uppercase)
+                                .font(Font.custom("Okuda Bold", size: 30))
+                                .kerning(1.3)
+                                .lineLimit(7)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .foregroundColor(.yellow)
+                                .layoutPriority(1)
+                                .padding()
                             
-                            Rectangle()
-                                .fill(Color(hex:0x9c9cff))
-                                .frame(height:60)
-                                .onTapGesture {
-                                    hueManager.discoverBridge()
-                                }
-                                .overlay (alignment: .bottomTrailing){
-                                    Text("SEARCH FOR BRIDGE")
-                                        .font(Font.custom("Okuda Bold", size: 30))
-                                        .kerning(1.3)
-                                        .foregroundColor(.black)
-                                        .layoutPriority(1)
-                                        .padding(3)
-                                }
-                            
-                            RightRoundedRectangle(radius:30)
-                                .fill(Color.blue)
-                                .frame(width:30,height:60)
-                                .padding(0)
+                            HStack(spacing:6) {
+                                Rectangle()
+                                    .fill(Color(hex:0x9c9cff))
+                                    .frame(height:60)
+                                    .overlay (alignment: .bottomTrailing){
+                                        Text("SEARCH FOR BRIDGE")
+                                            .font(Font.custom("Okuda Bold", size: 30))
+                                            .kerning(1.3)
+                                            .foregroundColor(.black)
+                                            .layoutPriority(1)
+                                            .padding(3)
+                                    }
+                                
+                                RightRoundedRectangle(radius:30)
+                                    .fill(Color.blue)
+                                    .frame(width:30,height:60)
+                                    .padding(0)
+                            }
+                            .onTapGesture {
+                                hueManager.discoverBridge()
+                            }
+                            .padding(0)
                         }
-                        .padding(0)
                     }
                        
                     Color.clear
@@ -124,40 +127,49 @@ struct DiscoveryView: View {
                     .fill(Color(hex:0xCCE0F7))
                     .frame(maxHeight: hueManager.ui.footerHeight)
                 
-                Rectangle()
-                    .fill(Color(.green))
-                    .frame(maxHeight:hueManager.ui.footerHeight)
-                    .overlay( alignment: .trailing) {
-                        Text("RETRY")
-                            .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))
-                            .kerning(1.1)
-                            .textCase(.uppercase)
-                            .foregroundColor(.black)
-                            .padding(.bottom, -4)
-                            .padding(.trailing, 1)
-                    }
-                    .onTapGesture {
-                        hueManager.playSound(sound: "tos_bridgescanner")
-                        hueManager.addBridgeState = .scanning
-                        hueManager.discoverBridge()
-                    }
+                if hueManager.addBridgeState == .scanning {
+                    
+                    
+                    Rectangle()
+                        .fill(Color(.yellow))
+                        .frame(maxHeight:hueManager.ui.footerHeight)
+                        .overlay( alignment: .trailing) {
+                            Text("ABORT")
+                                .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))
+                                .kerning(1.1)
+                                .textCase(.uppercase)
+                                .foregroundColor(.black)
+                                .padding(.bottom, -4)
+                                .padding(.trailing, 1)
+                        }
+                        .onTapGesture {
+                            hueManager.playSound(sound: "input_failed_clean")
+                            if hueManager.addBridgeState == .scanning {
+                                hueManager.addBridgeState = .readyToScan
+                            } else {
+                                hueManager.addBridgeState = .notAddingABridge
+                            }
+                        }
+                }
                 
-                Rectangle()
-                    .fill(Color(.yellow))
-                    .frame(maxHeight:hueManager.ui.footerHeight)
-                    .overlay( alignment: .trailing) {
-                        Text("ABORT")
-                            .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))
-                            .kerning(1.1)
-                            .textCase(.uppercase)
-                            .foregroundColor(.black)
-                            .padding(.bottom, -4)
-                            .padding(.trailing, 1)
-                    }
-                    .onTapGesture {
-                        hueManager.playSound(sound: "input_failed_clean")
-                        hueManager.addBridgeState = .notAddingABridge
-                    }
+                if hueManager.addBridgeState == .readyToScan {
+                    Rectangle()
+                        .fill(Color(.green))
+                        .frame(maxHeight:hueManager.ui.footerHeight)
+                        .overlay( alignment: .trailing) {
+                            Text("EXIT")
+                                .font(Font.custom("Okuda Bold", size: hueManager.ui.footerButtonFontSize))
+                                .kerning(1.1)
+                                .textCase(.uppercase)
+                                .foregroundColor(.black)
+                                .padding(.bottom, -4)
+                                .padding(.trailing, 1)
+                        }
+                        .onTapGesture {
+                            hueManager.playSound(sound: "colorpickerslidedown")
+                            hueManager.addBridgeState = .notAddingABridge
+                        }
+                }
                 
                 Rectangle(radius: hueManager.ui.footerHeight)
                     .fill(Color(hex:0xCCE0F7))
