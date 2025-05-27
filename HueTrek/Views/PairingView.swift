@@ -78,9 +78,7 @@ struct PairingView: View {
                                 .frame(height:60)
                                 .onTapGesture {
                                     hueManager.playSound(sound: "processing3")
-                                    hueManager.pairWithBridge {
-                                        hueManager.addBridgeState = .pairing
-                                    }
+                                    hueManager.pairWithBridge()
                                 }
                                 .overlay (alignment: .bottomTrailing){
                                     Text("START PAIRING")
@@ -92,7 +90,7 @@ struct PairingView: View {
                         }
                         
                         RightRoundedRectangle(radius:30)
-                            .fill(Color.blue)
+                            .fill( hueManager.addBridgeState == .pairing ? .green : .blue)
                             .frame(width:30,height:60)
                             .padding(0)
                     }
@@ -132,7 +130,7 @@ struct PairingView: View {
                     }
                     .onTapGesture {
                         hueManager.playSound(sound: "input_failed_clean")
-                        hueManager.addBridgeState = .notAddingABridge
+                        hueManager.abortDiscover()
                     }
                 
                 Rectangle(radius: hueManager.ui.footerHeight)

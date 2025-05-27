@@ -27,6 +27,20 @@ struct GlowingImageView: View {
                 .foregroundColor(.white)
                 .opacity(glow ? 1.0 : 0.3)
                 .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: glow)
+        }.overlay {
+            VStack {
+                Spacer()
+                HStack(spacing:20) {
+                    Circle().fill(Color.blue)
+                        .frame(width: 15, height: 15)
+                    Circle().fill(Color.blue)
+                        .frame(width: 15, height: 15)
+                    Circle().fill(Color.blue)
+                        .frame(width: 15, height: 15)
+                }
+                .padding(.bottom, -10)
+            }
+            .padding(0)
         }
 
         .onAppear() {

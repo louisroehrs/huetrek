@@ -37,7 +37,6 @@ struct DiscoveryView: View {
                 VStack(spacing: 40) {
                     Color.clear
                     
-
                     
                     if hueManager.addBridgeState == .scanning {
                         Text("Searching for Hue Bridge...")
@@ -55,10 +54,6 @@ struct DiscoveryView: View {
                                 }
                                 hueManager.playSound(sound: "tos_bridgescanner")
                             }
-                        
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle())
-
                     } else {
                         if hueManager.addBridgeState == .noBridgeFound {
                             Text("NO HUE BRIDGE FOUND")
@@ -70,16 +65,25 @@ struct DiscoveryView: View {
                                 .cornerRadius(20)
                                 .padding(0)
                         }
-                        VStack {
+                        VStack(spacing:10) {
                             Text( "Make sure the hue bridge is on, it's three blue lights are lit, and connected to the same network as this device.")
                                 .textCase(.uppercase)
                                 .font(Font.custom("Okuda Bold", size: 30))
                                 .kerning(1.3)
                                 .lineLimit(7)
                                 .fixedSize(horizontal: false, vertical: true)
-                                .foregroundColor(.yellow)
+                                .foregroundColor(.green)
                                 .layoutPriority(1)
                                 .padding()
+                            
+                            
+                                GlowingImageView()
+                            
+                            .padding(30)
+                            .background(Color(hex:0xd0d0d0))
+                            .cornerRadius(20)
+                            .frame(maxWidth: .infinity, maxHeight:250)
+                            .padding(40)
                             
                             HStack(spacing:6) {
                                 Rectangle()

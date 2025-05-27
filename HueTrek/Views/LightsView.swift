@@ -21,36 +21,36 @@ struct LightsView: View {
                         HStack {
                             
                             Image(systemName: "arrow.turn.left.up")
-                                .foregroundColor(Color.yellow)
-                                .font(.system(size: 30))
+                                .foregroundColor(Color.green)
+                                .font(.system(size: 25))
                                 .padding(0)
                             Text("Tap 'Demo Bridge' above to add your bridge.")
                                 .textCase(.uppercase)
                                 .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
-                                .foregroundColor(Color.yellow)
+                                .foregroundColor(Color.green)
                                 .padding(10)
                         }
                         
                         HStack {
                             Image(systemName: "arrow.turn.left.down")
-                                .foregroundColor(Color.yellow)
-                                .font(.system(size: 20))
+                                .foregroundColor(Color.cyan)
+                                .font(.system(size: 25))
                                 .padding(0)
                             Text("Tap a light name to toggle it.")
                                 .textCase(.uppercase)
                                 .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
-                                .foregroundColor(Color.yellow)
+                                .foregroundColor(Color.cyan)
                         }
                         .padding(.leading, 20)
                         HStack{
                             Text("Tap a palette to change color.")
                                 .textCase(.uppercase)
                                 .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
-                                .foregroundColor(Color.yellow)
+                                .foregroundColor(Color.green)
                                 .padding(10)
                             Image(systemName: "arrow.turn.right.down")
-                                .foregroundColor(Color.yellow)
-                                .font(.system(size: 20))
+                                .foregroundColor(Color.green)
+                                .font(.system(size: 25))
                                 .padding(0)
                         }
                         .padding(.leading, 20)
@@ -78,10 +78,10 @@ struct LightsView: View {
                         Text("Select Lights, Groups, or Sensors below.")
                             .textCase(.uppercase)
                             .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
-                            .foregroundColor(Color.yellow)
+                            .foregroundColor(Color.green)
                             .padding(10)
                         Image(systemName: "arrow.turn.right.down")
-                            .foregroundColor(Color.yellow)
+                            .foregroundColor(Color.green)
                             .font(.system(size: 30))
                             .padding(0)
                     }
