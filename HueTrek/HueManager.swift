@@ -54,7 +54,7 @@ struct Light: Identifiable, Codable {
     var name: String
     var state: State
     var isColorPickerVisible: Bool = false
-    var selectedColor: Color?
+    var selectedColor: Color = Color.black
     
     private enum CodingKeys: String, CodingKey {
         case id, name, state
@@ -187,7 +187,7 @@ class HueManager: ObservableObject {
         }
     }
     
-    @Published var bridgeIP: String? = DEMO_IP    // @Published var apiKey: String?
+    @Published var bridgeIP: String? = DEMO_IP
     @Published var error: String?
     @Published var addBridgeState: AddBridgeState = .notAddingABridge
     @Published var showingBridgeSelector = false
@@ -482,6 +482,7 @@ class HueManager: ObservableObject {
         request.httpBody = try? JSONEncoder().encode(["devicetype": "hue_ios_app"])
         
         logger.debug("Pairing with bridge at: \(url.absoluteString)")
+        
         secureSession.dataTask(with: request) { [weak self] data, response, error in
             if let error = error {
                 logger.error("Pairing error: \(error.localizedDescription)")
@@ -497,10 +498,12 @@ class HueManager: ObservableObject {
                 // Add new bridge configuration with default name
                 DispatchQueue.main.async {
                     self?.addNewBridgeConfiguration(name: "Bridge \(self?.bridgeConfigurations.count ?? 0 + 1)", bridgeIP: bridgeIP, apiKey: apiKey)
+                    completion?()
                 }
-                completion?()
             } else if let error = error {
-                self?.error = error.localizedDescription
+                DispatchQueue.main.async {
+                    self?.error = error.localizedDescription
+                }
             }
         }.resume()
     }
@@ -510,6 +513,14 @@ class HueManager: ObservableObject {
             hue: Double(light.state.hue!) / 65536.0,
             saturation: Double(light.state.sat!) / 255.0,
             brightness: Double(light.state.bri!) / 254.0)
+    }
+    
+    func setSelectedColor(light: Light) {
+        DispatchQueue.main.async {
+            if let index = self.currentBridgeConfig?.lights.firstIndex(where: { $0.id == light.id }) {
+                self.currentBridgeConfig?.lights[index].selectedColor = self.hueLightToSwiftColor(light: light)
+            }
+        }
     }
     
     func updateColor(light: Light, color: Color) {
@@ -652,7 +663,7 @@ class HueManager: ObservableObject {
                                 reachable: stateData["reachable"] as? Bool ?? false)
                             
                             var thisLight = Light(id: key, name: name, state: state)
-                            thisLight.selectedColor = self?.hueLightToSwiftColor(light: thisLight)
+                            thisLight.selectedColor = self?.hueLightToSwiftColor(light: thisLight) ?? Color.black
                             return thisLight
                         }
                         self?.currentBridgeConfig?.lights.sort { $0.name < $1.name }

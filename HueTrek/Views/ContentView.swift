@@ -190,8 +190,9 @@ struct ContentView: View {
                         BottomLeftRoundedRectangle(radius:30)
                             .fill(Color(hex:0xFF9C00))
                             .frame(width:50,height:30)
-
-                        if hueManager.addBridgeState == .scanning {
+                        if hueManager.addBridgeState == .readyToScan {
+                            ContentViewTitleText("ADD A BRIDGE")
+                        } else if hueManager.addBridgeState == .scanning {
                             ContentViewTitleText("SCANNING")
                         } else if hueManager.addBridgeState == .pairing {
                             ContentViewTitleText("PAIRING")

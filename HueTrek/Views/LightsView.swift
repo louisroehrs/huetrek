@@ -24,12 +24,13 @@ struct LightsView: View {
                                 .foregroundColor(Color.green)
                                 .font(.system(size: 25))
                                 .padding(0)
-                            Text("Tap 'Demo Bridge' above to add your bridge.")
+                            Text("Tap the bridge name above to add or change your bridge.")
                                 .textCase(.uppercase)
                                 .font(Font.custom("Okuda", size: hueManager.ui.rowFontSize))
                                 .foregroundColor(Color.green)
                                 .padding(10)
                         }
+                        .padding(.leading, 20)
                         
                         HStack {
                             Image(systemName: "arrow.turn.left.down")
@@ -138,7 +139,7 @@ struct LightRowView: View {
                     ColorPicker(
                         "",
                         selection: Binding(
-                            get: {light.selectedColor!},
+                            get: {light.selectedColor },
                             set: {
                                 hueManager.updateColor(light: light, color: $0)
                             }),

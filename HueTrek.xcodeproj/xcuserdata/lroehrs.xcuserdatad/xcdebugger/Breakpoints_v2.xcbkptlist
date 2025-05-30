@@ -46,8 +46,8 @@
             filePath = "HueTrek/HueManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "795"
-            endingLineNumber = "795"
+            startingLineNumber = "806"
+            endingLineNumber = "806"
             landmarkName = "fetchSensors()"
             landmarkType = "7">
          </BreakpointContent>
@@ -62,8 +62,8 @@
             filePath = "HueTrek/HueManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "796"
-            endingLineNumber = "796"
+            startingLineNumber = "807"
+            endingLineNumber = "807"
             landmarkName = "fetchSensors()"
             landmarkType = "7">
          </BreakpointContent>
@@ -110,8 +110,8 @@
             filePath = "HueTrek/HueManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "559"
-            endingLineNumber = "559"
+            startingLineNumber = "570"
+            endingLineNumber = "570"
             landmarkName = "sendColorUpdateToBridge(light:hue:saturation:brightness:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -126,8 +126,8 @@
             filePath = "HueTrek/HueManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "558"
-            endingLineNumber = "558"
+            startingLineNumber = "569"
+            endingLineNumber = "569"
             landmarkName = "sendColorUpdateToBridge(light:hue:saturation:brightness:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -142,8 +142,8 @@
             filePath = "HueTrek/HueManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "571"
-            endingLineNumber = "571"
+            startingLineNumber = "582"
+            endingLineNumber = "582"
             landmarkName = "sendColorUpdateToBridge(light:hue:saturation:brightness:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -158,8 +158,8 @@
             filePath = "HueTrek/HueManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "572"
-            endingLineNumber = "572"
+            startingLineNumber = "583"
+            endingLineNumber = "583"
             landmarkName = "sendColorUpdateToBridge(light:hue:saturation:brightness:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -174,8 +174,8 @@
             filePath = "HueTrek/HueManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "573"
-            endingLineNumber = "573"
+            startingLineNumber = "584"
+            endingLineNumber = "584"
             landmarkName = "HueManager"
             landmarkType = "3">
          </BreakpointContent>
@@ -190,8 +190,8 @@
             filePath = "HueTrek/HueManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "585"
-            endingLineNumber = "585"
+            startingLineNumber = "596"
+            endingLineNumber = "596"
             landmarkName = "rgbToHsb(red:green:blue:)"
             landmarkType = "7">
          </BreakpointContent>
