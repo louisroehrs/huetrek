@@ -354,7 +354,8 @@ class HueManager: ObservableObject {
             currentBridgeConfig = bridgeConfigurations.first
         }
         if bridgeConfigurations.isEmpty {
-            currentBridgeConfig = nil
+            bridgeConfigurations.append(demoBridgeConfig)
+            currentBridgeConfig = bridgeConfigurations.first
         }
     }
     
