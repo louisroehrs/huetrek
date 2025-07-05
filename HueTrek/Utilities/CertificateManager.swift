@@ -37,25 +37,28 @@ class CertificateManager: NSObject, URLSessionDelegate {
         
         // If we have pinned certificates, verify against them
         if !certificates.isEmpty {
-            let policies = NSArray(array: [SecPolicyCreateSSL(true, challenge.protectionSpace.host as CFString)])
+            let _ = NSArray(array: [SecPolicyCreateSSL(true, challenge.protectionSpace.host as CFString)])
             let isServerTrusted = SecTrustEvaluateWithError(serverTrust, nil)
             
             if isServerTrusted {
-                let serverCertificates = (0..<SecTrustGetCertificateCount(serverTrust)).compactMap { index in
-                    SecTrustGetCertificateAtIndex(serverTrust, index)
-                }
-                
-                // Check if any of our pinned certificates match the server's certificates
-                let isCertificateValid = serverCertificates.contains { serverCertificate in
-                    certificates.contains { pinnedCertificate in
-                        SecCertificateCopyData(serverCertificate) == SecCertificateCopyData(pinnedCertificate)
+                if let serverCertificates = SecTrustCopyCertificateChain(serverTrust) as? [SecCertificate] {
+                    let _ = Set(
+                        serverCertificates.map { SecCertificateCopyData($0) as Data }
+                    )
+                    
+                    
+                    // Check if any of our pinned certificates match the server's certificates
+                    let isCertificateValid = serverCertificates.contains { serverCertificate in
+                        certificates.contains { pinnedCertificate in
+                            SecCertificateCopyData(serverCertificate) == SecCertificateCopyData(pinnedCertificate)
+                        }
                     }
-                }
-                
-                if isCertificateValid {
-                    let credential = URLCredential(trust: serverTrust)
-                    completionHandler(.useCredential, credential)
-                    return
+                    
+                    if isCertificateValid {
+                        let credential = URLCredential(trust: serverTrust)
+                        completionHandler(.useCredential, credential)
+                        return
+                    }
                 }
             }
             
